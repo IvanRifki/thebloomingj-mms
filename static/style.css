@@ -916,6 +916,12 @@ footer span {
 }
 
 @media (max-width: 768px) {
+    #home {
+        padding: 0 !important;
+        align-items: center;
+        justify-content: center;
+    }
+
     .hero-sub {
         margin-top: 16px;
     }
