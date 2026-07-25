@@ -166,7 +166,7 @@ section:nth-child(even) {
     background: white;
     color: var(--soft);
     border-radius: 55px;
-    font-weight: 6medi00;
+    font-weight: 600;
     font-size: 1rem;
     text-decoration: none;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -204,7 +204,7 @@ section:nth-child(even) {
     text-transform: uppercase;
     color: var(--white);
     text-align: center;
-    margin-top: 50px;
+    margin-top: 0;
 }
 
 .hero-eyebrow span {
@@ -228,6 +228,7 @@ section:nth-child(even) {
     line-height: 0.2;
     letter-spacing: -0.02em;
     color: var(--soft);
+    margin-top: auto;
 }
 
 .hero-title .word-blooming {
@@ -923,11 +924,16 @@ footer span {
     }
 
     .hero-sub {
-        margin-top: 16px;
+        margin-top: 0px;
     }
 
     .hero-eyebrow .eyebrow-main {
-        margin-top: -60px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 0.75rem;
     }
 }
 
