@@ -185,19 +185,6 @@ section:nth-child(even) {
     box-shadow: 0 8px 24px rgba(200, 184, 232, 0.4);
 }
 
-#home::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--violet) 30%, black, black, var(--soft) 110%);
-    top: -100px;
-    right: -100px;
-    pointer-events: none;
-}
-
 .hero-eyebrow .eyebrow-main {
     font-size: 0.9rem;
     letter-spacing: 0.2em;
