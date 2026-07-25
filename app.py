@@ -8,17 +8,19 @@ from zoneinfo import ZoneInfo
 from flask import request, jsonify
 import uuid
 import os
+from dotenv import load_dotenv
 import io
 import csv
 import base64
 import re
 
+load_dotenv()
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
-    os.path.join(basedir, 'tiket.db')
-app.config['SECRET_KEY'] = 'the-blooming-journey-secret-key-2026'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'tiket.db'))
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'the-blooming-journey-secret-key-2026')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
