@@ -26,6 +26,8 @@
             <span class="logo-bloom">Blooming Journey</span>
         </div>
 
+        <button class="nav-toggle" id="navToggle" onclick="toggleNav()">☰</button>
+
         <ul class="nav-links">
             <li><a href="#home" class="active">Home</a></li>
             <li><a href="#join">How To Join</a></li>
@@ -44,16 +46,15 @@
                 The<br>
                 <span class="word-blooming">Blooming</span>
                 <span class="word-journey">Journey</span>
-
             </h1>
             <div class="hero-eyebrow glow-text">
                 <p class="eyebrow-main">MUSLIMAH LEVEL-UP</p>
                 <span>ROOTED | UNFOLDING | BECOMING</span>
             </div>
-        </div>
-        <div class="button-row">
-            <a href="#join" class="btn">Get To Know Us</a>
-            <a href="#daftar" class="btn">Daftar Sekarang</a>
+            <div class="button-row">
+                <a href="#join" class="btn">Get To Know Us</a>
+                <a href="#daftar" class="btn">Daftar Sekarang</a>
+            </div>
         </div>
     </section>
 
@@ -226,7 +227,7 @@
                     <div class="contact-item">
                         <div class="contact-icon">N</div>
                         <div class="contact-detail">
-                            <strong>Naila Nazua Khumairoh</strong>
+                            <strong>Naila Nazua Khumairoh (Registrasi)</strong>
                             <span>+62895-622-999-781</span>
                         </div>
                     </div>
@@ -270,6 +271,9 @@
             });
         });
 
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('open');
+        }
         // Smooth scroll for nav links
         navLinks.forEach(link => {
             link.addEventListener('click', e => {
