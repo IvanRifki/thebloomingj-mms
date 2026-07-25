@@ -135,6 +135,7 @@ section:nth-child(even) {
     position: relative;
     overflow: visible;
     min-height: 100vh;
+    display: flex;
 }
 
 .bunga-bg {
@@ -224,7 +225,7 @@ section:nth-child(even) {
     font-size: clamp(3.5rem, 10vw, 9rem);
     text-align: center;
     font-weight: 400;
-    line-height: 0.2;
+    line-height: 1;
     letter-spacing: -0.02em;
     color: var(--soft);
 }
@@ -912,6 +913,16 @@ footer span {
 
 .ticket-list li strong {
     color: #732D3A;
+}
+
+@media (max-width: 768px) {
+    .hero-sub {
+        margin-top: 16px;
+    }
+
+    .hero-eyebrow .eyebrow-main {
+        margin-top: 16px;
+    }
 }
 
 /* ── LOGIN PAGE ── */
