@@ -164,7 +164,7 @@ section:nth-child(even) {
     padding: 14px 14px;
     background: white;
     color: var(--soft);
-    border-radius: 50px;
+    border-radius: 55px;
     font-weight: 6medi00;
     font-size: 1rem;
     text-decoration: none;
