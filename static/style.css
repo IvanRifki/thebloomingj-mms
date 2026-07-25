@@ -923,6 +923,10 @@ footer span {
     .hero-eyebrow .eyebrow-main {
         margin-top: 16px;
     }
+
+    .hero-content {
+        margin-top: -80px;
+    }
 }
 
 /* ── LOGIN PAGE ── */
