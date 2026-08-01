@@ -23,6 +23,7 @@ app = Flask(__name__)
 
 db_url = os.environ.get(
     'DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'tiket.db'))
+# Neon/Heroku kadang kasih format "postgres://", SQLAlchemy versi baru butuh "postgresql://"
 if db_url.startswith('postgres://'):
     db_url = db_url.replace('postgres://', 'postgresql://', 1)
 
@@ -32,8 +33,11 @@ app.config['SECRET_KEY'] = os.environ.get(
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-with app.app_context():
-    db.create_all()
+try:
+    with app.app_context():
+        db.create_all()
+except Exception as e:
+    print(f"[WARNING] db.create_all() gagal: {e}")
 
 WIB = ZoneInfo('Asia/Jakarta')
 
@@ -239,19 +243,24 @@ def logout():
 @app.route('/admin')
 @login_required
 def admin():
-    tiket = Tiket.query.all()
-    total = len(tiket)
-    terpakai = sum(1 for t in tiket if t.is_used)
-    sisa = total - terpakai
-    kuota = get_kuota()
+    try:
+        tiket = Tiket.query.all()
+        total = len(tiket)
+        terpakai = sum(1 for t in tiket if t.is_used)
+        sisa = total - terpakai
+        kuota = get_kuota()
 
-    return render_template('admin.html',
-                           tiket=tiket,
-                           total=total,
-                           terpakai=terpakai,
-                           sisa=sisa,
-                           kuota=kuota
-                           )
+        return render_template('admin.html',
+                               tiket=tiket,
+                               total=total,
+                               terpakai=terpakai,
+                               sisa=sisa,
+                               kuota=kuota
+                               )
+    except Exception as e:
+        # SEMENTARA buat debug, hapus lagi kalau udah ketemu akar masalahnya
+        import traceback
+        return f"<pre>{traceback.format_exc()}</pre>", 500
 
 
 @app.route('/scan')
