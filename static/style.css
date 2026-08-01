@@ -1875,3 +1875,17 @@ a:hover {
     background: #FDECEF;
     border: 2px solid #D45D6E;
 }
+
+/* ── QR ── */
+.qr-wrapper {
+    background: white;
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    display: inline-block;
+    box-shadow: var(--shadow-md);
+    border: 3px solid var(--accent-pink);
+}
+
+.qr-wrapper img {
+    border-radius: 8px;
+}

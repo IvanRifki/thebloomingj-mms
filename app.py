@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import io
 import csv
 import base64
+import qrcode
 import re
 
 load_dotenv()
@@ -19,8 +20,10 @@ load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'tiket.db'))
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'the-blooming-journey-secret-key-2026')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'tiket.db'))
+app.config['SECRET_KEY'] = os.environ.get(
+    'SECRET_KEY', 'the-blooming-journey-secret-key-2026')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -80,7 +83,7 @@ class Tiket(db.Model):
     no_telp = db.Column(db.String(20))
     email = db.Column(db.String(100))
     kode_referal = db.Column(db.String(50))
-    jenis_tiket = db.Column(db.String(20))
+    jenis_tiket = db.Column(db.String(20))        # early_bird / normal
     is_used = db.Column(db.Boolean, default=False)
     waktu_daftar = db.Column(db.DateTime, default=wib_now)
     waktu_scan = db.Column(db.DateTime, nullable=True)
@@ -96,6 +99,31 @@ class Setting(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# kuotanya
+
+
+def get_kuota():
+    setting = Setting.query.filter_by(key='kuota').first()
+    return int(setting.value) if setting else 320
+
+
+def get_limit_early_bird():
+    setting = Setting.query.filter_by(key='limit_early_bird').first()
+    return int(setting.value) if setting else 100
+
+
+def get_limit_normal():
+    setting = Setting.query.filter_by(key='limit_normal').first()
+    return int(setting.value) if setting else 220
+
+
+def generate_qr_base64(data):
+    img = qrcode.make(data)
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    buffer.seek(0)
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
 
 @app.route('/')
 def index():
@@ -105,11 +133,22 @@ def index():
 @app.route('/daftar', methods=['GET', 'POST'])
 def pendaftaran():
     if request.method == 'POST':
+        # --- cek kuota total dulu ---
+        kuota = get_kuota()
+        total_terdaftar = Tiket.query.count()
+        if total_terdaftar >= kuota:
+            return render_template('habis.html', kuota=kuota)
+
         nama = sanitize_input(request.form.get('nama'))
         no_telp = sanitize_input(request.form.get('telp'))
         email = sanitize_input(request.form.get('email'))
         kode_referal = sanitize_input(request.form.get('ref'))
 
+        if not nama:
+            flash('Nama wajib diisi!', 'danger')
+            return redirect(url_for('pendaftaran'))
+
+        # --- tentukan jenis tiket (early bird / normal) berdasarkan tanggal ---
         hari_ini = date.today()
         early_bird_mulai = date(2026, 7, 1)
         early_bird_selesai = date(2026, 8, 15)
@@ -119,7 +158,26 @@ def pendaftaran():
         else:
             jenis_tiket = 'normal'
 
-        kode = str(uuid.uuid4())[:8].upper()
+        # --- cek kuota early bird ---
+        if jenis_tiket == 'early_bird':
+            limit_early_bird = get_limit_early_bird()
+            total_early_bird = Tiket.query.filter_by(
+                jenis_tiket='early_bird').count()
+
+            if total_early_bird >= limit_early_bird:
+                flash('Mohon maaf, kuota khusus Early Bird sudah penuh!', 'warning')
+                return redirect(url_for('pendaftaran'))
+
+        # --- cek kuota normal ---
+        if jenis_tiket == 'normal':
+            limit_normal = get_limit_normal()
+            total_normal = Tiket.query.filter_by(jenis_tiket='normal').count()
+
+            if total_normal >= limit_normal:
+                flash('Mohon maaf, kuota tiket Normal sudah penuh!', 'warning')
+                return redirect(url_for('pendaftaran'))
+
+        kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
         tiket_baru = Tiket(
             kode=kode,
@@ -133,10 +191,13 @@ def pendaftaran():
         db.session.add(tiket_baru)
         db.session.commit()
 
+        qr_base64 = generate_qr_base64(kode)
+
         return render_template('sukses.html',
                                nama=nama,
                                kode=kode,
                                angkatan=jenis_tiket,
+                               qr_base64=qr_base64,
                                waktu_daftar=format_wib(wib_now())
                                )
 
@@ -174,7 +235,7 @@ def admin():
     total = len(tiket)
     terpakai = sum(1 for t in tiket if t.is_used)
     sisa = total - terpakai
-    kuota = 100
+    kuota = get_kuota()
 
     return render_template('admin.html',
                            tiket=tiket,

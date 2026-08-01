@@ -11,7 +11,7 @@
 
     <div style="text-align: center; margin-bottom: 1.5rem;" class="animate-fade-in-up">
         <h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;">
-            <span style="color: #D9BBB4;">🌸</span> Scan Tiket
+            <span style="color: #D9BBB4;"></span> Scan Tiket
         </h1>
         <p style="color: #594F40; font-size: 0.9rem;">Arahkan kamera ke QR code tiket peserta</p>
         <div
@@ -21,9 +21,7 @@
 
     <div class="mms-card"
         style="padding: 1rem; margin-bottom: 1.5rem; animation-delay: 0.1s; border: 1px solid #D9BBB4;">
-        <div class="scanner-container">
-            <div id="reader"></div>
-        </div>
+        <div id="reader"></div>
     </div>
 
     {% if status %}
@@ -58,28 +56,12 @@
         </a>
     </div>
     {% endif %}
-
-    <div class="mms-card" style="animation-delay: 0.2s; border: 1px solid #D9BBB4;">
-        <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; text-align: center; color: #1a1a2e;">
-            <i class="fas fa-keyboard" style="color: #A6727C;"></i> Input Manual
-        </h4>
-        <form action="/cek_manual" method="POST">
-            <div style="display: flex; gap: 0.5rem;">
-                <input type="text" name="kode_input" class="mms-input" placeholder="Masukkan kode tiket..." required
-                    style="flex: 1; border-color: #D9BBB4;">
-                <button type="submit" class="mms-btn"
-                    style="background: linear-gradient(135deg, #732D3A, #A6727C); color: white;">
-                    <i class="fas fa-check"></i> Cek
-                </button>
-            </div>
-        </form>
-    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function onScanSuccess(decodedText, decodedResult) {
+    function onScanSuccess(decodedText) {
         if (decodedText.includes('/scan/')) {
             const parts = decodedText.split('/scan/');
             window.location.href = "/scan/" + parts[parts.length - 1];
