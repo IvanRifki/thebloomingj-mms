@@ -1890,42 +1890,36 @@ a:hover {
     border-radius: 8px;
 }
 
-/*paket harganya*/
+/* PILIHAN PAKET TIKET & TOTAL HARGA (KOTAK)*/
 
 /* Wrapper untuk daftar kartu paket */
 .paket-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 6px;
+    gap: 12px;
+    margin-top: 8px;
 }
 
-/* Tampilan kartu paket (Radio Card) */
+/* Tampilan tiap kartu pilihan (Box Paket) */
 .paket-card {
-    border: 2px solid #E5D5D0;
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
+    border: 2px solid #E5D5D0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    background-color: #FAF6F5;
     cursor: pointer;
-    transition: all 0.2s ease;
-    background: #FAF6F5;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
 }
 
 .paket-card:hover {
     border-color: #A6727C;
-    background: #FFFFFF;
+    background-color: #FFFFFF;
 }
 
-.paket-card input[type="radio"] {
-    accent-color: #732D3A;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-/* Status kartu aktif (saat dipilih) */
+/* Status kartu aktif saat dipilih */
 .paket-card.active {
     border-color: #732D3A;
     background-color: #FFF5F6;
@@ -1935,40 +1929,49 @@ a:hover {
 .paket-info {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
 .paket-title {
-    font-weight: 600;
+    font-weight: 700;
     color: #1A1A2E;
     font-size: 0.95rem;
 }
 
 .paket-desc {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: #7D7581;
+}
+
+.paket-card input[type="radio"] {
+    accent-color: #732D3A;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin: 0;
 }
 
 /* Box Total Harga */
 .total-harga-box {
     background: linear-gradient(135deg, #732D3A, #8C3A4B);
     color: #FFFFFF;
-    padding: 16px;
+    padding: 18px;
     border-radius: 14px;
     text-align: center;
-    margin: 15px 0 20px;
+    margin: 20px 0 25px;
     box-shadow: 0 4px 15px rgba(115, 45, 58, 0.2);
 }
 
 .total-harga-label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     opacity: 0.9;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .total-harga-value {
-    font-size: 1.6rem;
+    font-size: 1.7rem;
     font-weight: 700;
     font-family: 'Playfair Display', serif;
 }
