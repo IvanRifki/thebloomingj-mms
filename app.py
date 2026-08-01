@@ -20,12 +20,20 @@ load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+
+db_url = os.environ.get(
     'DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'tiket.db'))
+if db_url.startswith('postgres://'):
+    db_url = db_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SECRET_KEY'] = os.environ.get(
     'SECRET_KEY', 'the-blooming-journey-secret-key-2026')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+with app.app_context():
+    db.create_all()
 
 WIB = ZoneInfo('Asia/Jakarta')
 
