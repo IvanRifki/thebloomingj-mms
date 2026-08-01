@@ -1890,9 +1890,6 @@ a:hover {
     border-radius: 8px;
 }
 
-/* PILIHAN PAKET TIKET & TOTAL HARGA (KOTAK)*/
-
-/* Wrapper untuk daftar kartu paket */
 .paket-container {
     display: flex;
     flex-direction: column;
@@ -1900,7 +1897,6 @@ a:hover {
     margin-top: 8px;
 }
 
-/* Tampilan tiap kartu pilihan (Box Paket) */
 .paket-card {
     display: flex !important;
     align-items: center;
@@ -1919,7 +1915,6 @@ a:hover {
     background-color: #FFFFFF;
 }
 
-/* Status kartu aktif saat dipilih */
 .paket-card.active {
     border-color: #732D3A;
     background-color: #FFF5F6;
@@ -1951,7 +1946,6 @@ a:hover {
     margin: 0;
 }
 
-/* Box Total Harga */
 .total-harga-box {
     background: linear-gradient(135deg, #732D3A, #8C3A4B);
     color: #FFFFFF;
@@ -1967,34 +1961,30 @@ a:hover {
     text-transform: uppercase;
     letter-spacing: 1.2px;
     opacity: 0.9;
-    margin-bottom: 6px;
-}
-
-.total-harga-value {
-    font-size: 1.7rem;
-    font-weight: 700;
-    font-family: 'Playfair Display', serif;
+    margin-bottom: 4px;
 }
 
 .total-harga-rekening {
     font-size: 0.85rem;
     color: #FCEBEA;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-weight: 500;
 }
 
 .total-harga-wrapper {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 2px;
 }
 
 .total-harga-coret {
     color: #E2B3B9;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     text-decoration: line-through;
     font-weight: 500;
+    line-height: 1.2;
 }
 
 .total-harga-value {
@@ -2002,4 +1992,5 @@ a:hover {
     font-weight: 700;
     color: #FFFFFF;
     font-family: 'Playfair Display', serif;
+    line-height: 1.2;
 }
