@@ -1,8 +1,8 @@
 from app import app, db, User
 
 with app.app_context():
-    username = 'admin'
-    password = 'ganti_password_ini'
+    username = 'seminar'
+    password = 'tbjoktober'
 
     existing = User.query.filter_by(username=username).first()
     if not existing:
