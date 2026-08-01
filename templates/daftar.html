@@ -69,39 +69,46 @@
 
                 <!-- PILIHAN PAKET TIKET -->
                 <div class="form-group">
-                    <label>Pilih Paket Tiket EARLY BIRD</label>
+                    <label>Pilih Paket Tiket EARLY BIRD <span style="color: red;">*</span></label>
                     <div class="paket-container">
                         <label class="paket-card active">
                             <div class="paket-info">
                                 <span class="paket-title">Single</span>
                                 <span class="paket-desc">1 Orang — Rp 329.000</span>
                             </div>
-                            <input type="radio" name="paket_tiket" value="single_eb" data-harga="329000" checked>
+                            <input type="radio" name="paket_tiket" value="single_eb" data-harga="329000"
+                                data-harga-lama="389000" checked required>
                         </label>
 
                         <label class="paket-card">
                             <div class="paket-info">
                                 <span class="paket-title">Circle</span>
-                                <span class="paket-desc">3 — Rp 319.000/Orang</span>
+                                <span class="paket-desc">3 Orang — Rp 319.000/Orang</span>
                             </div>
-                            <input type="radio" name="paket_tiket" value="circle_eb" data-harga="657000">
+                            <input type="radio" name="paket_tiket" value="circle_eb" data-harga="657000"
+                                data-harga-lama="1167000" required>
                         </label>
 
                         <label class="paket-card">
                             <div class="paket-info">
                                 <span class="paket-title">Squad</span>
-                                <span class="paket-desc">5 — Rp 299.000/Orang</span>
+                                <span class="paket-desc">5 Orang — Rp 299.000/Orang</span>
                             </div>
-                            <input type="radio" name="paket_tiket" value="squad_eb" data-harga="1495000">
+                            <input type="radio" name="paket_tiket" value="squad_eb" data-harga="1495000"
+                                data-harga-lama="1945000" required>
                         </label>
                     </div>
                 </div>
 
-                <!-- BOX TOTAL HARGA -->
+                <!-- BOX TOTAL HARGA (HARGA CORET DITAMPILKAN DI SINI) -->
                 <div class="total-harga-box">
-                    <div class="total-harga-label">Total Harga</div>
-                    <div class="total-harga-label">A.n Annisa Nafiya 7132562126 (BSI)</div>
-                    <div class="total-harga-value" id="displayTotalHarga">Rp 329.000</div>
+                    <div class="total-harga-label">Total Harga Transfer</div>
+                    <div class="total-harga-rekening">A.n Annisa Nafiya 7132562126 (BSI)</div>
+
+                    <div class="total-harga-wrapper">
+                        <del class="total-harga-coret" id="displayHargaLama">Rp 389.000</del>
+                        <span class="total-harga-value" id="displayTotalHarga">Rp 329.000</span>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -136,9 +143,10 @@
     </section>
 
     <script>
-        // --- SCRIPT HITUNG TOTAL HARGA OTOMATIS ---
+        // --- SCRIPT HITUNG TOTAL HARGA & HARGA CORET OTOMATIS ---
         const radioPaket = document.querySelectorAll('input[name="paket_tiket"]');
         const displayTotal = document.getElementById('displayTotalHarga');
+        const displayHargaLama = document.getElementById('displayHargaLama');
         const paketCards = document.querySelectorAll('.paket-card');
 
         function formatRupiah(angka) {
@@ -151,9 +159,16 @@
                 paketCards.forEach(card => card.classList.remove('active'));
                 e.target.closest('.paket-card').classList.add('active');
 
-                // Update Nominal Total Harga
-                const harga = parseInt(e.target.getAttribute('data-harga'));
-                displayTotal.innerText = formatRupiah(harga);
+                // Ambil nominal data-harga (baru) & data-harga-lama
+                const hargaBaru = parseInt(e.target.getAttribute('data-harga'));
+                const hargaLama = parseInt(e.target.getAttribute('data-harga-lama'));
+
+                // Update ke tampilan Box Total Harga
+                displayTotal.innerText = formatRupiah(hargaBaru);
+
+                if (displayHargaLama) {
+                    displayHargaLama.innerText = formatRupiah(hargaLama);
+                }
             });
         });
 
@@ -173,29 +188,36 @@
             });
         });
 
-        form.addEventListener('submit', () => {
-            fields.forEach(id => localStorage.removeItem('form_' + id));
-        });
+        if (form) {
+            form.addEventListener('submit', () => {
+                fields.forEach(id => localStorage.removeItem('form_' + id));
+            });
+        }
 
         // --- SCRIPT MODAL INFO TIKET ---
         const btnInfoTiket = document.getElementById('btnInfoTiket');
         const modalTiket = document.getElementById('modalTiket');
         const modalClose = document.getElementById('modalClose');
 
-        btnInfoTiket.addEventListener('click', () => {
-            modalTiket.classList.add('active');
-        });
+        if (btnInfoTiket && modalTiket && modalClose) {
+            btnInfoTiket.addEventListener('click', () => {
+                modalTiket.classList.add('active');
+            });
 
-        modalClose.addEventListener('click', () => {
-            modalTiket.classList.remove('active');
-        });
-
-        modalTiket.addEventListener('click', (e) => {
-            if (e.target === modalTiket) {
+            modalClose.addEventListener('click', () => {
                 modalTiket.classList.remove('active');
-            }
-        });
+            });
+
+            modalTiket.addEventListener('click', (e) => {
+                if (e.target === modalTiket) {
+                    modalTiket.classList.remove('active');
+                }
+            });
+        }
     </script>
+</body>
+
+</html>
 </body>
 
 </html>

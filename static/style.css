@@ -1975,3 +1975,31 @@ a:hover {
     font-weight: 700;
     font-family: 'Playfair Display', serif;
 }
+
+.total-harga-rekening {
+    font-size: 0.85rem;
+    color: #FCEBEA;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.total-harga-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.total-harga-coret {
+    color: #E2B3B9;
+    font-size: 1.1rem;
+    text-decoration: line-through;
+    font-weight: 500;
+}
+
+.total-harga-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    font-family: 'Playfair Display', serif;
+}
