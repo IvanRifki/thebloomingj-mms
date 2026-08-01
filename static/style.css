@@ -1889,3 +1889,86 @@ a:hover {
 .qr-wrapper img {
     border-radius: 8px;
 }
+
+/*paket harganya*/
+
+/* Wrapper untuk daftar kartu paket */
+.paket-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+/* Tampilan kartu paket (Radio Card) */
+.paket-card {
+    border: 2px solid #E5D5D0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #FAF6F5;
+}
+
+.paket-card:hover {
+    border-color: #A6727C;
+    background: #FFFFFF;
+}
+
+.paket-card input[type="radio"] {
+    accent-color: #732D3A;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Status kartu aktif (saat dipilih) */
+.paket-card.active {
+    border-color: #732D3A;
+    background-color: #FFF5F6;
+    box-shadow: 0 4px 12px rgba(115, 45, 58, 0.12);
+}
+
+.paket-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.paket-title {
+    font-weight: 600;
+    color: #1A1A2E;
+    font-size: 0.95rem;
+}
+
+.paket-desc {
+    font-size: 0.8rem;
+    color: #7D7581;
+}
+
+/* Box Total Harga */
+.total-harga-box {
+    background: linear-gradient(135deg, #732D3A, #8C3A4B);
+    color: #FFFFFF;
+    padding: 16px;
+    border-radius: 14px;
+    text-align: center;
+    margin: 15px 0 20px;
+    box-shadow: 0 4px 15px rgba(115, 45, 58, 0.2);
+}
+
+.total-harga-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+    margin-bottom: 4px;
+}
+
+.total-harga-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+}
