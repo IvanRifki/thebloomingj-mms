@@ -31,7 +31,20 @@
         <div class="form-container">
             <h2>Form Pendaftaran</h2>
             <p class="form-subtitle">Isi data di bawah ini untuk mendaftar</p>
-            <form id="registerForm" method="POST" action="/daftar">
+
+            <!-- Menampilkan Pesan Flash dari Flask (misal error/warning) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}"
+                style="padding: 10px 15px; margin-bottom: 15px; border-radius: 8px; font-size: 0.9rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form id="registerForm" method="POST" action="/daftar" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="nama">Nama Lengkap</label>
                     <input type="text" id="nama" name="nama" placeholder="Nama Lengkap" required>
@@ -48,17 +61,57 @@
                     <label for="ref">Kode Referal</label>
                     <input type="text" id="ref" name="ref" placeholder="Isi jika memiliki kode referal">
                 </div>
+
                 <!-- tiket info-->
                 <div class="form-group">
-                    <button type="button" class="btn-info-tiket" id="btnInfoTiket">ℹInformasi Tiket</button>
+                    <button type="button" class="btn-info-tiket" id="btnInfoTiket">ℹ Informasi Tiket</button>
                 </div>
+
+                <!-- PILIHAN PAKET TIKET -->
+                <div class="form-group">
+                    <label>Pilih Paket Tiket</label>
+                    <div class="paket-container">
+                        <label class="paket-card active">
+                            <div class="paket-info">
+                                <span class="paket-title">Single Early Bird (1)</span>
+                                <span class="paket-desc">1 Orang — Rp 329.000</span>
+                            </div>
+                            <input type="radio" name="paket_tiket" value="single_eb" data-harga="329000" checked>
+                        </label>
+
+                        <label class="paket-card">
+                            <div class="paket-info">
+                                <span class="paket-title">Circle Early Bird (3)</span>
+                                <span class="paket-desc">3 Orang Paket Promo</span>
+                            </div>
+                            <input type="radio" name="paket_tiket" value="circle_eb" data-harga="657000">
+                        </label>
+
+                        <label class="paket-card">
+                            <div class="paket-info">
+                                <span class="paket-title">Squad Early Bird (5)</span>
+                                <span class="paket-desc">5 Orang Paket Promo</span>
+                            </div>
+                            <input type="radio" name="paket_tiket" value="squad_eb" data-harga="1495000">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- BOX TOTAL HARGA -->
+                <div class="total-harga-box">
+                    <div class="total-harga-label">Total Harga Transfer</div>
+                    <div class="total-harga-value" id="displayTotalHarga">Rp 329.000</div>
+                </div>
+
                 <div class="form-group">
                     <label for="bukti">Upload Bukti Transfer</label>
                     <input type="file" id="bukti" name="bukti" accept="image/*,.pdf" required>
                     <span class="file-hint">Format: JPG, PNG, atau PDF (max 3MB)</span>
                 </div>
+
                 <button type="submit" class="btn-submit">Daftar Sekarang</button>
             </form>
+
             <!-- info tiket -->
             <div class="modal-overlay" id="modalTiket">
                 <div class="modal-card">
@@ -72,7 +125,7 @@
                         <li><span>Squad (5 Orang)</span><strong>Rp 299.000/Orang</strong></li>
                     </ul>
                     <h4>Normal</h4>
-                    <h4>34 Agustus - 35 September</h4>
+                    <h4>31 Agustus - 15 September</h4>
                     <ul class="ticket-list">
                         <li><span>Single</span><strong>Rp 389.000/Orang</strong></li>
                     </ul>
@@ -80,8 +133,30 @@
             </div>
         </div>
     </section>
-    <script>
 
+    <script>
+        // --- SCRIPT HITUNG TOTAL HARGA OTOMATIS ---
+        const radioPaket = document.querySelectorAll('input[name="paket_tiket"]');
+        const displayTotal = document.getElementById('displayTotalHarga');
+        const paketCards = document.querySelectorAll('.paket-card');
+
+        function formatRupiah(angka) {
+            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        radioPaket.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Highlight kartu yang dipilih
+                paketCards.forEach(card => card.classList.remove('active'));
+                e.target.closest('.paket-card').classList.add('active');
+
+                // Update Nominal Total Harga
+                const harga = parseInt(e.target.getAttribute('data-harga'));
+                displayTotal.innerText = formatRupiah(harga);
+            });
+        });
+
+        // --- SCRIPT AUTO SAVE FORM (LOCALSTORAGE) ---
         const form = document.getElementById('registerForm');
         const fields = ['nama', 'telp', 'email'];
 
@@ -100,8 +175,8 @@
         form.addEventListener('submit', () => {
             fields.forEach(id => localStorage.removeItem('form_' + id));
         });
-    </script>
-    <script>
+
+        // --- SCRIPT MODAL INFO TIKET ---
         const btnInfoTiket = document.getElementById('btnInfoTiket');
         const modalTiket = document.getElementById('modalTiket');
         const modalClose = document.getElementById('modalClose');
@@ -114,7 +189,6 @@
             modalTiket.classList.remove('active');
         });
 
-        // klik di luar card juga nutup modal
         modalTiket.addEventListener('click', (e) => {
             if (e.target === modalTiket) {
                 modalTiket.classList.remove('active');

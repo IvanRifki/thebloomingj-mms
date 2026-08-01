@@ -23,7 +23,6 @@ app = Flask(__name__)
 
 db_url = os.environ.get(
     'DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'tiket.db'))
-# Neon/Heroku kadang kasih format "postgres://", SQLAlchemy versi baru butuh "postgresql://"
 if db_url.startswith('postgres://'):
     db_url = db_url.replace('postgres://', 'postgresql://', 1)
 
