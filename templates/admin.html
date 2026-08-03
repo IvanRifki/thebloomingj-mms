@@ -191,10 +191,15 @@
                         <td><span class="mms-badge" style="background: #e9ecef; color: #495057;">{{ t.jenis_tiket
                                 }}</span></td>
                         <td>
-                            {% if t.is_used %}
-                            <span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>
+                            {% if t.paket == 'single_eb' %}
+                            <span class="mms-badge mms-badge-info"><i class="fas fa-user"></i> Single Early</span>
+                            {% elif t.paket == 'circle_eb' %}
+                            <span class="mms-badge mms-badge-primary"><i class="fas fa-users"></i> Circle </span>
+                            {% elif t.paket == 'squad_eb' %}
+                            <span class="mms-badge mms-badge-success"><i class="fas fa-user-friends"></i> Squad </span>
                             {% else %}
-                            <span class="mms-badge mms-badge-warning"><i class="fas fa-clock"></i> Belum</span>
+                            <span class="mms-badge mms-badge-secondary"><i class="fas fa-ticket-alt"></i> {{ t.paket or
+                                '-' }}</span>
                             {% endif %}
                         </td>
                         <td style="font-size: 0.82rem; color: var(--text-muted);">{{ t.waktu_scan|wib }}</td>
