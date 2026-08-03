@@ -85,7 +85,7 @@
                                 <span class="paket-title">Circle</span>
                                 <span class="paket-desc">3 Orang — Rp 319.000/Orang</span>
                             </div>
-                            <input type="radio" name="paket_tiket" value="circle_eb" data-harga="657000"
+                            <input type="radio" name="paket_tiket" value="circle_eb" data-harga="957000"
                                 data-harga-lama="1167000" required>
                         </label>
 
@@ -143,7 +143,7 @@
     </section>
 
     <script>
-        // --- SCRIPT HITUNG TOTAL HARGA & HARGA CORET OTOMATIS ---
+        // --- SCRIPT HITUNG TOTAL HARGA---
         const radioPaket = document.querySelectorAll('input[name="paket_tiket"]');
         const displayTotal = document.getElementById('displayTotalHarga');
         const displayHargaLama = document.getElementById('displayHargaLama');
@@ -155,15 +155,14 @@
 
         radioPaket.forEach(radio => {
             radio.addEventListener('change', (e) => {
-                // Highlight kartu yang dipilih
+
                 paketCards.forEach(card => card.classList.remove('active'));
                 e.target.closest('.paket-card').classList.add('active');
 
-                // Ambil nominal data-harga (baru) & data-harga-lama
+
                 const hargaBaru = parseInt(e.target.getAttribute('data-harga'));
                 const hargaLama = parseInt(e.target.getAttribute('data-harga-lama'));
 
-                // Update ke tampilan Box Total Harga
                 displayTotal.innerText = formatRupiah(hargaBaru);
 
                 if (displayHargaLama) {
@@ -194,7 +193,7 @@
             });
         }
 
-        // --- SCRIPT MODAL INFO TIKET ---
+        // --- INFO TIKET ---
         const btnInfoTiket = document.getElementById('btnInfoTiket');
         const modalTiket = document.getElementById('modalTiket');
         const modalClose = document.getElementById('modalClose');
