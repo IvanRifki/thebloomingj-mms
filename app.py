@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from flask import request, jsonify
 import uuid
 import os
+from supabase import create_client, Client
 from dotenv import load_dotenv
 import io
 import csv
@@ -37,6 +38,10 @@ try:
         db.create_all()
 except Exception as e:
     print(f"[WARNING] db.create_all() gagal: {e}")
+
+supabase_url = os.environ.get('SUPABASE_URL')
+supabase_key = os.environ.get('SUPABASE_KEY')
+supabase = create_client(supabase_url, supabase_key)
 
 WIB = ZoneInfo('Asia/Jakarta')
 
