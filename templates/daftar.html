@@ -46,15 +46,15 @@
 
             <form id="registerForm" method="POST" action="/daftar" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="nama">Nama Lengkap</label>
+                    <label for="nama">Nama Lengkap<span style="color: red;">*</span></label>
                     <input type="text" id="nama" name="nama" placeholder="Nama Lengkap" required>
                 </div>
                 <div class="form-group">
-                    <label for="telp">No. Telepon</label>
+                    <label for="telp">No. Telepon<span style="color: red;">*</span></label>
                     <input type="tel" id="telp" name="telp" placeholder="Contoh: 08123456789" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email<span style="color: red;">*</span></label>
                     <input type="email" id="email" name="email" placeholder="mms@email.com" required>
                 </div>
                 <div class="form-group">
@@ -100,9 +100,9 @@
                     </div>
                 </div>
 
-                <!-- BOX TOTAL HARGA (HARGA CORET DITAMPILKAN DI SINI) -->
+                <!-- BOX TOTAL HARGA-->
                 <div class="total-harga-box">
-                    <div class="total-harga-label">Total Harga Transfer</div>
+                    <div class="total-harga-label">Total Harga</div>
                     <div class="total-harga-rekening">A.n Annisa Nafiya 7132562126 (BSI)</div>
 
                     <div class="total-harga-wrapper">
@@ -112,7 +112,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="bukti">Upload Bukti Transfer</label>
+                    <label for="bukti">Upload Bukti Transfer<span style="color: red;">*</span></label>
                     <input type="file" id="bukti" name="bukti" accept="image/*,.pdf" required>
                     <span class="file-hint">Format: JPG, PNG, atau PDF (max 3MB)</span>
                 </div>
@@ -143,7 +143,7 @@
     </section>
 
     <script>
-        // --- HITUNG TOTAL HARGA---
+
         const radioPaket = document.querySelectorAll('input[name="paket_tiket"]');
         const displayTotal = document.getElementById('displayTotalHarga');
         const displayHargaLama = document.getElementById('displayHargaLama');
