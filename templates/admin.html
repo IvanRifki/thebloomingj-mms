@@ -114,7 +114,7 @@
                 <tbody>
                     {% set count_early_bird = namespace(value=1) %}
                     {% for t in tiket %}
-                    {% if t.jenis_tiket == 'early_bird' or t.jenis_tiket == 'Early Bird' %}
+                    {% if t.jenis_tiket in ['single_eb', 'circle_eb', 'squad_eb'] %}
                     <tr>
                         <td>{{ count_early_bird.value }}</td>
                         <td style="font-weight: 500;">{{ t.nama }}</td>

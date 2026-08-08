@@ -100,7 +100,8 @@ class Tiket(db.Model):
     no_telp = db.Column(db.String(20))
     email = db.Column(db.String(100))
     kode_referal = db.Column(db.String(50))
-    jenis_tiket = db.Column(db.String(20))        # early_bird / normal
+    jenis_tiket = db.Column(db.String(50))
+    jumlah_peserta = db.Column(db.Integer, default=1)
     is_used = db.Column(db.Boolean, default=False)
     waktu_daftar = db.Column(db.DateTime, default=wib_now)
     waktu_scan = db.Column(db.DateTime, nullable=True)
@@ -150,9 +151,9 @@ def index():
 @app.route('/daftar', methods=['GET', 'POST'])
 def pendaftaran():
     if request.method == 'POST':
-        # --- cek kuota total dulu ---
         kuota = get_kuota()
-        total_terdaftar = Tiket.query.count()
+        total_terdaftar = db.session.query(
+            db.func.sum(Tiket.jumlah_peserta)).scalar() or 0
         if total_terdaftar >= kuota:
             return render_template('habis.html', kuota=kuota)
 
@@ -165,32 +166,41 @@ def pendaftaran():
             flash('Nama wajib diisi!', 'danger')
             return redirect(url_for('pendaftaran'))
 
-        # --- tentukan jenis tiket (early bird / normal) berdasarkan tanggal ---
         hari_ini = date.today()
-        early_bird_mulai = date(2026, 7, 1)
+        early_bird_mulai = date(2026, 8, 20)
         early_bird_selesai = date(2026, 8, 15)
 
         if early_bird_mulai <= hari_ini <= early_bird_selesai:
-            jenis_tiket = 'early_bird'
+            jenis_tiket = request.form.get('paket_tiket')
         else:
             jenis_tiket = 'normal'
 
-        # --- cek kuota early bird ---
-        if jenis_tiket == 'early_bird':
-            limit_early_bird = get_limit_early_bird()
-            total_early_bird = Tiket.query.filter_by(
-                jenis_tiket='early_bird').count()
+        map_peserta = {
+            'single_eb': 1,
+            'circle_eb': 3,
+            'squad_eb': 5
+        }
+        peserta_baru = map_peserta.get(jenis_tiket, 1)
 
-            if total_early_bird >= limit_early_bird:
+        if total_terdaftar + peserta_baru > kuota:
+            return render_template('habis.html', kuota=kuota)
+
+        if jenis_tiket in ['single_eb', 'circle_eb', 'squad_eb']:
+            limit_early_bird = get_limit_early_bird()
+            tiket_eb = Tiket.query.filter(Tiket.jenis_tiket.in_(
+                ['single_eb', 'circle_eb', 'squad_eb'])).all()
+            total_early_bird = sum(t.jumlah_peserta for t in tiket_eb)
+
+            if total_early_bird + peserta_baru > limit_early_bird:
                 flash('Mohon maaf, kuota khusus Early Bird sudah penuh!', 'warning')
                 return redirect(url_for('pendaftaran'))
 
-        # --- cek kuota normal ---
         if jenis_tiket == 'normal':
             limit_normal = get_limit_normal()
-            total_normal = Tiket.query.filter_by(jenis_tiket='normal').count()
+            tiket_normal = Tiket.query.filter_by(jenis_tiket='normal').all()
+            total_normal = sum(t.jumlah_peserta for t in tiket_normal)
 
-            if total_normal >= limit_normal:
+            if total_normal + peserta_baru > limit_normal:
                 flash('Mohon maaf, kuota tiket Normal sudah penuh!', 'warning')
                 return redirect(url_for('pendaftaran'))
 
@@ -203,6 +213,7 @@ def pendaftaran():
             email=email,
             kode_referal=kode_referal,
             jenis_tiket=jenis_tiket,
+            jumlah_peserta=peserta_baru,
             waktu_daftar=wib_now()
         )
         db.session.add(tiket_baru)
