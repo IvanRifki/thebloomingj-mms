@@ -4,12 +4,16 @@ with app.app_context():
     username = 'seminar'
     password = 'tbjoktober'
 
-    existing = User.query.filter_by(username=username).first()
-    if not existing:
-        u = User(username=username)
-        u.set_password(password)
-        db.session.add(u)
-        db.session.commit()
-        print('Admin berhasil dibuat!')
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        user = User(username=username)
+        user.set_password(password)
+        db.session.add(user)
+        print(f"User '{username}' berhasil dibuat!")
     else:
-        print('Admin sudah ada.')
+        # Paksa timpa password pakai method set_password() bawaan Model User
+        user.set_password(password)
+        print(f"Password '{username}' berhasil diperbarui ke 'tbjoktober'!")
+
+    db.session.commit()

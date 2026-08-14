@@ -154,8 +154,9 @@ def pendaftaran():
         kuota = get_kuota()
         total_terdaftar = db.session.query(
             db.func.sum(Tiket.jumlah_peserta)).scalar() or 0
+
         if total_terdaftar >= kuota:
-            return render_template('habis.html', kuota=kuota)
+            return redirect('/habis')
 
         nama = sanitize_input(request.form.get('nama'))
         no_telp = sanitize_input(request.form.get('telp'))
@@ -164,13 +165,12 @@ def pendaftaran():
 
         if not nama:
             flash('Nama wajib diisi!', 'danger')
-            return redirect(url_for('pendaftaran'))
+            return redirect('/daftar')
 
         hari_ini = date.today()
         early_bird_mulai = date(2026, 8, 20)
-        early_bird_selesai = date(2026, 8, 15)
 
-        if early_bird_mulai <= hari_ini <= early_bird_selesai:
+        if hari_ini >= early_bird_mulai:
             jenis_tiket = request.form.get('paket_tiket')
         else:
             jenis_tiket = 'normal'
@@ -183,17 +183,18 @@ def pendaftaran():
         peserta_baru = map_peserta.get(jenis_tiket, 1)
 
         if total_terdaftar + peserta_baru > kuota:
-            return render_template('habis.html', kuota=kuota)
+            return redirect('/habis')
 
         if jenis_tiket in ['single_eb', 'circle_eb', 'squad_eb']:
-            limit_early_bird = get_limit_early_bird()
-            tiket_eb = Tiket.query.filter(Tiket.jenis_tiket.in_(
-                ['single_eb', 'circle_eb', 'squad_eb'])).all()
+            limit_early_bird = 40
+            tiket_eb = Tiket.query.filter(
+                Tiket.jenis_tiket.in_(['single_eb', 'circle_eb', 'squad_eb'])
+            ).all()
             total_early_bird = sum(t.jumlah_peserta for t in tiket_eb)
 
             if total_early_bird + peserta_baru > limit_early_bird:
                 flash('Mohon maaf, kuota khusus Early Bird sudah penuh!', 'warning')
-                return redirect(url_for('pendaftaran'))
+                return redirect('/normal_daftar?status=eb_penuh')
 
         if jenis_tiket == 'normal':
             limit_normal = get_limit_normal()
@@ -201,8 +202,7 @@ def pendaftaran():
             total_normal = sum(t.jumlah_peserta for t in tiket_normal)
 
             if total_normal + peserta_baru > limit_normal:
-                flash('Mohon maaf, kuota tiket Normal sudah penuh!', 'warning')
-                return redirect(url_for('pendaftaran'))
+                return redirect('/habis')
 
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
@@ -229,7 +229,7 @@ def pendaftaran():
                                waktu_daftar=format_wib(wib_now())
                                )
 
-    return render_template('daftar.html')
+    return render_template('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
