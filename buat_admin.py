@@ -7,13 +7,20 @@ with app.app_context():
     user = User.query.filter_by(username=username).first()
 
     if not user:
+
         user = User(username=username)
         user.set_password(password)
         db.session.add(user)
         print(f"User '{username}' berhasil dibuat!")
     else:
-        # Paksa timpa password pakai method set_password() bawaan Model User
+
         user.set_password(password)
-        print(f"Password '{username}' berhasil diperbarui ke 'tbjoktober'!")
+        print(f"Password untuk '{username}' berhasil diperbarui!")
 
     db.session.commit()
+
+    cek_user = User.query.filter_by(username=username).first()
+    print("=== STATUS USER ===")
+    print(f"Username: {cek_user.username}")
+    print(f"Password Hash di DB: {cek_user.password_hash}")
+    print(f"Tes Login 'tbjoktober': {cek_user.check_password('tbjoktober')}")
