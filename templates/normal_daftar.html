@@ -32,18 +32,18 @@
             <h2>Form Pendaftaran</h2>
             <p class="form-subtitle">Isi data di bawah ini untuk mendaftar</p>
 
-
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for category, message in messages %}
-            <div class="alert alert-{{ category }} {% if category == 'eb-penuh' %}alert-eb-penuh{% endif %}">
+            <div class="alert alert-{{ category }}"
+                style="padding: 10px 15px; margin-bottom: 15px; border-radius: 8px; font-size: 0.9rem;">
                 {{ message }}
             </div>
             {% endfor %}
             {% endif %}
             {% endwith %}
 
-            <form id="registerForm" method="POST" action="/daftar" enctype="multipart/form-data">
+            <form id="registerForm" method="POST" action="/normal_daftar" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="nama">Nama Lengkap<span style="color: red;">*</span></label>
                     <input type="text" id="nama" name="nama" placeholder="Nama Lengkap" required>
@@ -56,41 +56,22 @@
                     <label for="email">Email<span style="color: red;">*</span></label>
                     <input type="email" id="email" name="email" placeholder="mms@email.com" required>
                 </div>
-
-                <!-- tiket info-->
                 <div class="form-group">
-                    <button type="button" class="btn-info-tiket" id="btnInfoTiket">ℹ Informasi Tiket</button>
+                    <label for="ref">Kode Referal</label>
+                    <input type="text" id="ref" name="ref" placeholder="Isi jika memiliki kode referal">
+                    <span class="file-hint" id="refFeedback"></span>
                 </div>
 
-                <!-- PILIHAN PAKET TIKET -->
+                <!-- PILIHAN PAKET TIKET (Normal, hanya Single) -->
                 <div class="form-group">
-                    <label>Pilih Paket Tiket EARLY BIRD <span style="color: red;">*</span></label>
+                    <label>Tiket Normal <span style="color: red;">*</span></label>
                     <div class="paket-container">
                         <label class="paket-card active">
                             <div class="paket-info">
                                 <span class="paket-title">Single</span>
-                                <span class="paket-desc">1 Orang — Rp 329.000</span>
+                                <span class="paket-desc">1 Orang — Rp 389.000</span>
                             </div>
-                            <input type="radio" name="paket_tiket" value="single_eb" data-harga="329000"
-                                data-harga-lama="389000" checked required>
-                        </label>
-
-                        <label class="paket-card">
-                            <div class="paket-info">
-                                <span class="paket-title">Circle</span>
-                                <span class="paket-desc">3 Orang — Rp 319.000/Orang</span>
-                            </div>
-                            <input type="radio" name="paket_tiket" value="circle_eb" data-harga="957000"
-                                data-harga-lama="1167000" required>
-                        </label>
-
-                        <label class="paket-card">
-                            <div class="paket-info">
-                                <span class="paket-title">Squad</span>
-                                <span class="paket-desc">5 Orang — Rp 299.000/Orang</span>
-                            </div>
-                            <input type="radio" name="paket_tiket" value="squad_eb" data-harga="1495000"
-                                data-harga-lama="1945000" required>
+                            <input type="radio" name="paket_tiket" value="normal" data-harga="389000" checked required>
                         </label>
                     </div>
                 </div>
@@ -101,8 +82,8 @@
                     <div class="total-harga-rekening">A.n Annisa Nafiya 7132562126 (BSI)</div>
 
                     <div class="total-harga-wrapper">
-                        <del class="total-harga-coret" id="displayHargaLama">Rp 389.000</del>
-                        <span class="total-harga-value" id="displayTotalHarga">Rp 329.000</span>
+                        <del class="total-harga-coret" id="displayHargaLama" style="display: none;">Rp 389.000</del>
+                        <span class="total-harga-value" id="displayTotalHarga">Rp 389.000</span>
                     </div>
                 </div>
 
@@ -114,61 +95,57 @@
 
                 <button type="submit" class="btn-submit">Daftar Sekarang</button>
             </form>
-
-            <!-- info tiket -->
-            <div class="modal-overlay" id="modalTiket">
-                <div class="modal-card">
-                    <button class="modal-close" id="modalClose">&times;</button>
-                    <h3>Informasi Harga Tiket</h3>
-                    <h4>Early Bird</h4>
-                    <h4>17 Agustus - 30 Agustus</h4>
-                    <ul class="ticket-list">
-                        <li><span>Single</span><strong>Rp 329.000/Orang</strong></li>
-                        <li><span>Circle (3 Orang)</span><strong>Rp 319.000/Orang</strong></li>
-                        <li><span>Squad (5 Orang)</span><strong>Rp 299.000/Orang</strong></li>
-                    </ul>
-                    <h4>Normal</h4>
-                    <h4>31 Agustus - 15 September</h4>
-                    <ul class="ticket-list">
-                        <li><span>Single</span><strong>Rp 389.000/Orang</strong></li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </section>
 
     <script>
 
-        const radioPaket = document.querySelectorAll('input[name="paket_tiket"]');
         const displayTotal = document.getElementById('displayTotalHarga');
         const displayHargaLama = document.getElementById('displayHargaLama');
-        const paketCards = document.querySelectorAll('.paket-card');
+        const refInput = document.getElementById('ref');
+        const refFeedback = document.getElementById('refFeedback');
 
         function formatRupiah(angka) {
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        radioPaket.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-
-                paketCards.forEach(card => card.classList.remove('active'));
-                e.target.closest('.paket-card').classList.add('active');
+        // --- HARGA ---
+        const HARGA_NORMAL = 389000;
+        const HARGA_DISKON_REF = 388000;
 
 
-                const hargaBaru = parseInt(e.target.getAttribute('data-harga'));
-                const hargaLama = parseInt(e.target.getAttribute('data-harga-lama'));
+        const KODE_REFERAL_VALID = [
+            "MMS2026",
+            "SAHABATMMS",
+            "BLOOMING01"
+        ];
 
-                displayTotal.innerText = formatRupiah(hargaBaru);
+        function cekReferal() {
+            const kode = refInput.value.trim().toUpperCase();
 
-                if (displayHargaLama) {
-                    displayHargaLama.innerText = formatRupiah(hargaLama);
-                }
-            });
-        });
+            if (kode !== "" && KODE_REFERAL_VALID.includes(kode)) {
+
+                displayHargaLama.style.display = 'inline';
+                displayHargaLama.innerText = formatRupiah(HARGA_NORMAL);
+                displayTotal.innerText = formatRupiah(HARGA_DISKON_REF);
+                refFeedback.innerText = "Kode referal valid ✓";
+                refFeedback.style.color = "green";
+            } else {
+
+                displayHargaLama.style.display = 'none';
+                displayTotal.innerText = formatRupiah(HARGA_NORMAL);
+                refFeedback.innerText = kode === "" ? "" : "Kode referal tidak ditemukan";
+                refFeedback.style.color = "red";
+            }
+        }
+
+        if (refInput) {
+            refInput.addEventListener('input', cekReferal);
+        }
 
         // --- autosave buat org org---
         const form = document.getElementById('registerForm');
-        const fields = ['nama', 'telp', 'email'];
+        const fields = ['nama', 'telp', 'email', 'ref'];
 
         fields.forEach(id => {
             const input = document.getElementById(id);
@@ -182,36 +159,15 @@
             });
         });
 
+
+        cekReferal();
+
         if (form) {
             form.addEventListener('submit', () => {
                 fields.forEach(id => localStorage.removeItem('form_' + id));
             });
         }
-
-        // --- INFO TIKET ---
-        const btnInfoTiket = document.getElementById('btnInfoTiket');
-        const modalTiket = document.getElementById('modalTiket');
-        const modalClose = document.getElementById('modalClose');
-
-        if (btnInfoTiket && modalTiket && modalClose) {
-            btnInfoTiket.addEventListener('click', () => {
-                modalTiket.classList.add('active');
-            });
-
-            modalClose.addEventListener('click', () => {
-                modalTiket.classList.remove('active');
-            });
-
-            modalTiket.addEventListener('click', (e) => {
-                if (e.target === modalTiket) {
-                    modalTiket.classList.remove('active');
-                }
-            });
-        }
     </script>
-</body>
-
-</html>
 </body>
 
 </html>

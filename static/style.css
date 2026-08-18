@@ -1586,6 +1586,22 @@ a:hover {
     border-left: 4px solid #A6727C;
 }
 
+.alert {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.alert-eb-penuh {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: #dc3545;
+    text-align: center;
+    border: 2px solid #b02a37;
+}
+
 /* ── ACTION BUTTONS ── */
 .action-btns {
     display: flex;

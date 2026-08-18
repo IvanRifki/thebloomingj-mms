@@ -96,6 +96,13 @@
             <i class="fas fa-graduation-cap" style="color: var(--primary-light);"></i>
             Data Peserta Early Bird
         </h4>
+        <div style="margin-bottom: 1rem; position: relative; max-width: 320px;">
+            <i class="fas fa-search"
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+            <input type="text" id="searchEarlyBird" class="mms-input" placeholder="Cari nama peserta..."
+                oninput="searchNamaTable('searchEarlyBird', 'tableBodyEarlyBird')"
+                style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem;">
+        </div>
         <div class="mms-table-wrapper" style="overflow-x: auto;">
             <table class="mms-table">
                 <thead>
@@ -111,11 +118,11 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBodyEarlyBird">
                     {% set count_early_bird = namespace(value=1) %}
                     {% for t in tiket %}
                     {% if t.jenis_tiket in ['single_eb', 'circle_eb', 'squad_eb'] %}
-                    <tr>
+                    <tr id="row-tiket-{{ t.id }}">
                         <td>{{ count_early_bird.value }}</td>
                         <td style="font-weight: 500;">{{ t.nama }}</td>
                         <td>{{ t.no_telp }}</td>
@@ -143,10 +150,10 @@
                                     <i class="fas fa-user-check"></i>
                                 </button>
                                 {% endif %}
-                                <form method="POST" action="/hapus_tiket/{{ t.id }}" style="display: inline;">
-                                    <button type="submit" class="action-btn action-btn-delete"
-                                        onclick="return confirm('Hapus data?')"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button class="action-btn action-btn-delete" onclick="hapusTiket('{{ t.id }}', this)"
+                                    title="Hapus data">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -163,6 +170,13 @@
             <i class="fas fa-users" style="color: var(--primary-light);"></i>
             Data Peserta Normal
         </h4>
+        <div style="margin-bottom: 1rem; position: relative; max-width: 320px;">
+            <i class="fas fa-search"
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+            <input type="text" id="searchNormal" class="mms-input" placeholder="Cari nama peserta..."
+                oninput="searchNamaTable('searchNormal', 'tableBodyNormal')"
+                style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem;">
+        </div>
         <div class="mms-table-wrapper" style="overflow-x: auto;">
             <table class="mms-table">
                 <thead>
@@ -178,11 +192,11 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBodyNormal">
                     {% set count_normal = namespace(value=1) %}
                     {% for t in tiket %}
                     {% if t.jenis_tiket == 'normal' or t.jenis_tiket == 'Normal' %}
-                    <tr>
+                    <tr id="row-tiket-{{ t.id }}">
                         <td>{{ count_normal.value }}</td>
                         <td style="font-weight: 500;">{{ t.nama }}</td>
                         <td>{{ t.no_telp }}</td>
@@ -216,10 +230,10 @@
                                     <i class="fas fa-user-check"></i>
                                 </button>
                                 {% endif %}
-                                <form method="POST" action="/hapus_tiket/{{ t.id }}" style="display: inline;">
-                                    <button type="submit" class="action-btn action-btn-delete"
-                                        onclick="return confirm('Hapus?')"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button class="action-btn action-btn-delete" onclick="hapusTiket('{{ t.id }}', this)"
+                                    title="Hapus data">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -571,9 +585,11 @@
                    <i class="fas fa-undo"></i>
                  </button>
                </form>`
-                : '';
+                : `<button class="action-btn action-btn-hadir" onclick="hadirkanManual('${t.id}', this)" title="Hadirkan peserta">
+                 <i class="fas fa-user-check"></i>
+               </button>`;
 
-            html += `<tr data-status="${status}" data-nama="${eName.toLowerCase()}" data-jenis_tiket="${eJenis.toLowerCase()}" data-kode="${eKode.toLowerCase()}">
+            html += `<tr id="row-tiket-${t.id}" data-status="${status}" data-nama="${eName.toLowerCase()}" data-jenis_tiket="${eJenis.toLowerCase()}" data-kode="${eKode.toLowerCase()}">
             <td>${i + 1}</td>
             <td style="font-weight: 500;">${eName}</td>
             <td>${eTelp}</td>
@@ -585,11 +601,9 @@
             <td>
                 <div class="action-btns">
                     ${resetBtn}
-                    <form method="POST" action="/hapus_tiket/${t.id}" style="display: inline;">
-                        <button type="submit" class="action-btn action-btn-delete" onclick="return confirm('Hapus tiket ${eKode}?')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </form>
+                    <button class="action-btn action-btn-delete" onclick="hapusTiket('${t.id}', this)" title="Hapus data">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </td>
         </tr>`;
@@ -610,10 +624,66 @@
         }
     }
 
+    // --- SEARCH NAMA PESERTA (untuk tabel Early Bird & Normal) ---
+    function searchNamaTable(inputId, tbodyId) {
+        const keyword = document.getElementById(inputId).value.trim().toLowerCase();
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const namaCell = row.cells[1]; // kolom "Nama Lengkap"
+            if (!namaCell) return;
+            const nama = namaCell.textContent.toLowerCase();
+            row.style.display = nama.includes(keyword) ? '' : 'none';
+        });
+    }
+
+    // --- HAPUS TIKET LANGSUNG (AJAX, tanpa reload halaman) ---
+    function hapusTiket(tiketId, btnElement) {
+        if (!confirm('Hapus data peserta ini? Tindakan ini tidak bisa dibatalkan.')) return;
+
+        btnElement.disabled = true;
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch('/hapus_tiket/' + tiketId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.getElementById('row-tiket-' + tiketId);
+                    if (row) {
+                        row.style.transition = 'opacity 0.25s ease';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                            updateLiveStats();
+                        }, 250);
+                    } else {
+                        updateLiveStats();
+                    }
+                } else {
+                    alert('Gagal menghapus data: ' + (data.message || 'Unknown error'));
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = '<i class="fas fa-trash"></i>';
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Koneksi bermasalah!');
+                btnElement.disabled = false;
+                btnElement.innerHTML = '<i class="fas fa-trash"></i>';
+            });
+    }
+
     setInterval(updateLiveStats, 5000);
 </script>
 
-</table>
 <script>
     function showHapusSemuaModal() {
         document.getElementById('hapusSemuaModal').classList.add('show');
@@ -641,14 +711,14 @@
                     td.innerHTML = '<span class="mms-badge mms-badge-success" style="font-size: 0.72rem;"><i class="fas fa-check"></i> Sudah</span>';
 
                     const row = td.parentElement;
-                    const statusCell = row.querySelector('td:nth-child(5)');
+                    const statusCell = row.querySelector('td:nth-child(7)');
                     if (statusCell) {
                         statusCell.innerHTML = '<span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>';
                     }
 
-                    const actionCell = row.querySelector('td:nth-child(7)');
+                    const actionCell = row.querySelector('td:nth-child(9)');
                     if (actionCell) {
-                        const existingDelete = actionCell.querySelector('form[action*="hapus_tiket"]');
+                        const existingDelete = actionCell.querySelector('.action-btn-delete');
                         const deleteHtml = existingDelete ? existingDelete.outerHTML : '';
                         actionCell.innerHTML = `<div class="action-btns">
                         <form method="POST" action="/reset_tiket/${tiketId}" style="display: inline;">
@@ -673,9 +743,5 @@
             });
     }
 </script>
-
-</body>
-
-</html>
 
 {% endblock %}
