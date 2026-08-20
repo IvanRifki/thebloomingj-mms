@@ -1,5 +1,5 @@
 from datetime import date
-from flask import Flask, redirect, render_template, request, url_for, jsonify, send_file, flash, send_from_directory
+from flask import Flask, Response, redirect, render_template, request, url_for, jsonify, send_file, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -397,6 +397,67 @@ def hapus_semua_peserta():
     db.session.commit()
     flash('Semua data peserta berhasil dihapus', 'success')
     return redirect('/admin')
+
+
+@app.route('/reset_semua', methods=['POST'])
+def reset_semua():
+    Tiket.query.update({
+        Tiket.is_used: False})
+    db.session.commit()
+    flash('Semua status kehadiran berhasil direset menjadi Belum Hadir.', 'success')
+    return redirect('/admin')
+
+
+@app.route('/export/csv')
+def export_csv():
+
+    tiket = Tiket.query.order_by(Tiket.id.asc()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header
+    writer.writerow([
+        'No',
+        'Kode Tiket',
+        'Nama Lengkap',
+        'No Telp',
+        'Email',
+        'Kode Referal',
+        'Jenis Tiket',
+        'Jumlah Peserta',
+        'Status',
+        'Waktu Daftar',
+        'Waktu Scan'
+    ])
+
+    # Data
+    for no, t in enumerate(tiket, start=1):
+
+        writer.writerow([
+            no,
+            t.kode or '-',
+            t.nama or '-',
+            t.no_telp or '-',
+            t.email or '-',
+            t.kode_referal or '-',
+            t.jenis_tiket or '-',
+            t.jumlah_peserta or 0,
+            'Hadir' if t.is_used else 'Belum Hadir',
+            format_wib(t.waktu_daftar) if t.waktu_daftar else '-',
+            format_wib(t.waktu_scan) if t.waktu_scan else '-'
+        ])
+
+    output.seek(0)
+
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv; charset=utf-8',
+        headers={
+            'Content-Disposition':
+                'attachment; filename=data_peserta_mms.csv'
+        }
+    )
 
 
 @app.route('/login', methods=['GET', 'POST'])
