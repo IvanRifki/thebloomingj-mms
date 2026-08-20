@@ -466,6 +466,8 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Lengkap</th>
+                        <th>Bukti TF</th>
+                        <th>Checkbox</th>
                         <th>No Telp</th>
                         <th>Email</th>
                         <th>Jenis Tiket</th>
@@ -499,6 +501,26 @@
                             {{ t.nama }}
                         </td>
 
+                        <!-- BUKTI TF -->
+                        <td>
+                            {% if t.bukti_transfer %}
+                            <a href="{{ t.bukti_transfer }}" target="_blank">
+                                <img src="{{ t.bukti_transfer }}" alt="Bukti TF"
+                                    style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='inline';">
+                                <span style="display:none;font-size:0.8rem;">📄 Lihat</span>
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-muted);">-</span>
+                            {% endif %}
+                        </td>
+
+
+                        <!-- CHECKBOX VERIFIKASI -->
+                        <td style="text-align:center;">
+                            <input type="checkbox" class="verify-checkbox" data-id="{{ t.id }}" {% if
+                                t.bukti_terverifikasi %}checked{% endif %}>
+                        </td>
 
                         <!-- TELEPON -->
                         <td>
@@ -602,7 +624,7 @@
 
                     <tr class="empty-row">
 
-                        <td colspan="9" class="empty-table">
+                        <td colspan="10" class="empty-table">
 
                             <div class="empty-table-icon">
                                 📋
@@ -663,6 +685,8 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Lengkap</th>
+                        <th>Bukti TF</th>
+                        <th>Checkbox</th>
                         <th>No Telp</th>
                         <th>Email</th>
                         <th>Kode Referal</th>
@@ -697,6 +721,26 @@
                             {{ t.nama }}
                         </td>
 
+                        <!-- BUKTI TF -->
+                        <td>
+                            {% if t.bukti_transfer %}
+                            <a href="{{ t.bukti_transfer }}" target="_blank">
+                                <img src="{{ t.bukti_transfer }}" alt="Bukti TF"
+                                    style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='inline';">
+                                <span style="display:none;font-size:0.8rem;">📄 Lihat</span>
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-muted);">-</span>
+                            {% endif %}
+                        </td>
+
+
+                        <!-- CHECKBOX VERIFIKASI -->
+                        <td style="text-align:center;">
+                            <input type="checkbox" class="verify-checkbox" data-id="{{ t.id }}" {% if
+                                t.bukti_terverifikasi %}checked{% endif %}>
+                        </td>
 
                         <!-- TELEPON -->
                         <td>
@@ -809,7 +853,7 @@
 
                     <tr class="empty-row">
 
-                        <td colspan="9" class="empty-table">
+                        <td colspan="11" class="empty-table">
 
                             <div class="empty-table-icon">
                                 📋
@@ -1081,6 +1125,8 @@
 
         if (!input || !tbody) return;
 
+        const colspan = tbodyId === 'tableBodyEarlyBird' ? 10 : 11;
+
         const keyword = input.value
             .trim()
             .toLowerCase();
@@ -1127,7 +1173,7 @@
                 searchEmpty.className = 'search-empty-row';
 
                 searchEmpty.innerHTML = `
-                    <td colspan="9" class="empty-table">
+                    <td colspan="${colspan}" class="empty-table">
                         <div class="empty-table-icon">🔍</div>
                         <p>Peserta tidak ditemukan.</p>
                     </td>
@@ -1146,6 +1192,57 @@
 
     }
 
+    /* =====================================================
+       VERIFIKASI BUKTI TRANSFER
+       ===================================================== */
+
+    document.addEventListener('change', function (event) {
+
+        if (!event.target.classList.contains('verify-checkbox')) {
+            return;
+        }
+
+        const checkbox = event.target;
+        const tiketId = checkbox.dataset.id;
+        const verified = checkbox.checked;
+
+        checkbox.disabled = true;
+
+        fetch('/verify_bukti/' + encodeURIComponent(tiketId), {
+
+            method: 'POST',
+
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+
+            body: JSON.stringify({ verified: verified })
+
+        })
+
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
+
+            .then(function (data) {
+                if (!data.success) {
+                    throw new Error(data.message || 'Gagal menyimpan verifikasi.');
+                }
+                checkbox.disabled = false;
+            })
+
+            .catch(function (error) {
+                console.error('Error verify bukti:', error);
+                alert(error.message || 'Koneksi bermasalah!');
+                checkbox.checked = !verified; // rollback tampilan kalau gagal
+                checkbox.disabled = false;
+            });
+
+    });
 
     /* =====================================================
        ANIMATE STAT VALUE
@@ -1306,7 +1403,7 @@
 
                                 tbody.innerHTML = `
                                 <tr class="empty-row">
-                                    <td colspan="9" class="empty-table">
+                                    <td colspan="11" class="empty-table">
                                         <div class="empty-table-icon">
                                             📋
                                         </div>

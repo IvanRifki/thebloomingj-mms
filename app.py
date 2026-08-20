@@ -7,8 +7,10 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from flask import request, jsonify
 import uuid
+import uuid as uuid_lib
 import os
 from supabase import create_client, Client
+from supabase_client import supabase
 from dotenv import load_dotenv
 import io
 import csv
@@ -533,6 +535,20 @@ def hadirkan_manual():
         'success': True,
         'message': 'Peserta berhasil dihadirkan.'
     })
+
+
+@app.route('/verify_bukti/<int:tiket_id>', methods=['POST'])
+@login_required
+def verify_bukti(tiket_id):
+    try:
+        tiket = Tiket.query.get_or_404(tiket_id)
+        data = request.get_json()
+        tiket.bukti_terverifikasi = data.get('verified', False)
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 @app.route('/admin/kuota', methods=['POST'])
