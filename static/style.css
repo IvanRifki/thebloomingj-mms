@@ -71,7 +71,7 @@ nav.scrolled {
     font-family: 'NewIconScript', serif;
     font-size: 1.5rem;
     font-weight: 700;
-    color: black;
+    color: var(--soft);
     letter-spacing: -0.02em;
 }
 
