@@ -68,6 +68,25 @@ def wib_filter(dt):
     return format_wib(dt)
 
 
+def upload_bukti_transfer(file):
+    """Upload file bukti transfer ke Supabase Storage, return public URL atau None"""
+    if not file or not file.filename:
+        return None
+
+    ext = file.filename.rsplit('.', 1)[-1].lower()
+    filename = f"{uuid.uuid4().hex}.{ext}"
+
+    file_bytes = file.read()
+
+    supabase.storage.from_('bukti-transfer').upload(
+        filename,
+        file_bytes,
+        {"content-type": file.content_type}
+    )
+
+    return supabase.storage.from_('bukti-transfer').get_public_url(filename)
+
+
 def sanitize_input(text, max_length=100):
     if not text:
         return ''
@@ -257,6 +276,8 @@ def pendaftaran():
 
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
+        bukti_url = upload_bukti_transfer(request.files.get('bukti'))
+
         tiket_baru = Tiket(
             kode=kode,
             nama=nama,
@@ -265,7 +286,8 @@ def pendaftaran():
             kode_referal=kode_referal,
             jenis_tiket=jenis_tiket,
             jumlah_peserta=peserta_baru,
-            waktu_daftar=wib_now()
+            waktu_daftar=wib_now(),
+            bukti_transfer=bukti_url
         )
 
         db.session.add(tiket_baru)
@@ -365,6 +387,8 @@ def pendaftaran_normal():
 
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
+        bukti_url = upload_bukti_transfer(request.files.get('bukti'))
+
         tiket_baru = Tiket(
             kode=kode,
             nama=nama,
@@ -373,7 +397,8 @@ def pendaftaran_normal():
             kode_referal=kode_referal_final,
             jenis_tiket='normal',
             jumlah_peserta=1,
-            waktu_daftar=wib_now()
+            waktu_daftar=wib_now(),
+            bukti_transfer=bukti_url
         )
 
         db.session.add(tiket_baru)
