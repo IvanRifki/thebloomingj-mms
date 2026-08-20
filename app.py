@@ -137,7 +137,7 @@ def upload_bukti_transfer(file):
         file_options={
             'content-type': content_type,
             'cache-control': '3600',
-            'upsert': 'False'
+            'upsert': False
         }
     )
 
