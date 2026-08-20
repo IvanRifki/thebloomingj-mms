@@ -409,28 +409,48 @@ def pendaftaran():
                 )
 
         try:
+            file_bukti = request.files.get('bukti')
+
+            print(
+                'FILE BUKTI:',
+                file_bukti.filename
+                if file_bukti and file_bukti.filename
+                else 'TIDAK ADA FILE'
+            )
+
+            if file_bukti:
+                print(
+                    'CONTENT TYPE:',
+                    file_bukti.content_type
+                )
+
             bukti_url = upload_bukti_transfer(
-                request.files.get('bukti')
+                file_bukti
             )
 
         except ValueError as e:
+            print(
+                'UPLOAD VALIDATION ERROR:',
+                repr(e)
+            )
+
             flash(
                 str(e),
                 'danger'
             )
+
             return redirect('/daftar')
 
         except Exception as e:
             print(
-                "UPLOAD BUKTI ERROR:",
+                'UPLOAD BUKTI ERROR:',
                 repr(e)
             )
 
             db.session.rollback()
 
             flash(
-                'Bukti transfer gagal diupload. '
-                'Pastikan file maksimal 3 MB dan coba lagi.',
+                f'Upload bukti transfer gagal: {str(e)}',
                 'danger'
             )
 
@@ -568,28 +588,48 @@ def pendaftaran_normal():
             )
 
         try:
+            file_bukti = request.files.get('bukti')
+
+            print(
+                'FILE BUKTI:',
+                file_bukti.filename
+                if file_bukti and file_bukti.filename
+                else 'TIDAK ADA FILE'
+            )
+
+            if file_bukti:
+                print(
+                    'CONTENT TYPE:',
+                    file_bukti.content_type
+                )
+
             bukti_url = upload_bukti_transfer(
-                request.files.get('bukti')
+                file_bukti
             )
 
         except ValueError as e:
+            print(
+                'UPLOAD VALIDATION ERROR:',
+                repr(e)
+            )
+
             flash(
                 str(e),
                 'danger'
             )
+
             return redirect('/normal_daftar')
 
         except Exception as e:
             print(
-                "UPLOAD BUKTI ERROR:",
+                'UPLOAD BUKTI ERROR:',
                 repr(e)
             )
 
             db.session.rollback()
 
             flash(
-                'Bukti transfer gagal diupload. '
-                'Pastikan file maksimal 3 MB dan coba lagi.',
+                f'Upload bukti transfer gagal: {str(e)}',
                 'danger'
             )
 
