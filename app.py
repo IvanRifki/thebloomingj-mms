@@ -323,7 +323,6 @@ def pendaftaran_normal():
             kode_referal=kode_referal_final,
             jenis_tiket='normal',
             jumlah_peserta=1,
-            harga=harga_final,
             waktu_daftar=wib_now()
         )
 
