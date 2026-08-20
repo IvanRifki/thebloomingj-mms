@@ -412,16 +412,28 @@ def pendaftaran():
             bukti_url = upload_bukti_transfer(
                 request.files.get('bukti')
             )
+
         except ValueError as e:
-            flash(str(e), 'danger')
+            flash(
+                str(e),
+                'danger'
+            )
             return redirect('/daftar')
-        except Exception:
+
+        except Exception as e:
+            print(
+                "UPLOAD BUKTI ERROR:",
+                repr(e)
+            )
+
             db.session.rollback()
+
             flash(
                 'Bukti transfer gagal diupload. '
                 'Pastikan file maksimal 3 MB dan coba lagi.',
                 'danger'
             )
+
             return redirect('/daftar')
 
         kode = "MMS-" + str(
@@ -559,16 +571,28 @@ def pendaftaran_normal():
             bukti_url = upload_bukti_transfer(
                 request.files.get('bukti')
             )
+
         except ValueError as e:
-            flash(str(e), 'danger')
+            flash(
+                str(e),
+                'danger'
+            )
             return redirect('/normal_daftar')
-        except Exception:
+
+        except Exception as e:
+            print(
+                "UPLOAD BUKTI ERROR:",
+                repr(e)
+            )
+
             db.session.rollback()
+
             flash(
                 'Bukti transfer gagal diupload. '
                 'Pastikan file maksimal 3 MB dan coba lagi.',
                 'danger'
             )
+
             return redirect('/normal_daftar')
 
         kode = "MMS-" + str(
