@@ -569,11 +569,6 @@ def admin():
 
 @app.route('/habis')
 def habis():
-    return render_template('habis.html')
-
-
-@app.route('/habis')
-def habis():
     kuota = get_kuota()
 
     total_terdaftar = db.session.query(
