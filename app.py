@@ -94,6 +94,7 @@ class User(UserMixin, db.Model):
 
 
 class Tiket(db.Model):
+    __tablename__ = 'tiket'
     id = db.Column(db.Integer, primary_key=True)
     kode = db.Column(db.String(10), unique=True, nullable=False)
     nama = db.Column(db.String(100))
@@ -105,6 +106,8 @@ class Tiket(db.Model):
     is_used = db.Column(db.Boolean, default=False)
     waktu_daftar = db.Column(db.DateTime, default=wib_now)
     waktu_scan = db.Column(db.DateTime, nullable=True)
+    bukti_transfer = db.Column(db.String(255), nullable=True)
+    bukti_terverifikasi = db.Column(db.Boolean, default=False)
 
 
 class Setting(db.Model):
@@ -499,6 +502,37 @@ def export_csv():
                 'attachment; filename=data_peserta_mms.csv'
         }
     )
+
+
+@app.route('/hadirkan_manual', methods=['POST'])
+def hadirkan_manual():
+    data = request.get_json()
+
+    tiket_id = data.get('id')
+
+    if not tiket_id:
+        return jsonify({
+            'success': False,
+            'message': 'ID tiket tidak ditemukan.'
+        }), 400
+
+    # Cari tiket
+    tiket = Tiket.query.get(tiket_id)
+
+    if not tiket:
+        return jsonify({
+            'success': False,
+            'message': 'Tiket tidak ditemukan.'
+        }), 404
+
+    tiket.status = 'hadir'
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': 'Peserta berhasil dihadirkan.'
+    })
 
 
 @app.route('/admin/kuota', methods=['POST'])
