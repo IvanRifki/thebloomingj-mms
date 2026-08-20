@@ -91,6 +91,80 @@
     </div>
 
 
+    <div class="mms-chart-card animate-fade-in-up" style="margin-bottom: 2rem;">
+        <h4 style="margin-bottom: 1.5rem;">
+            <i class="fas fa-graduation-cap" style="color: var(--primary-light);"></i>
+            Data Peserta Early Bird
+        </h4>
+        <div style="margin-bottom: 1rem; position: relative; max-width: 320px;">
+            <i class="fas fa-search"
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+            <input type="text" id="searchEarlyBird" class="mms-input" placeholder="Cari nama peserta..."
+                oninput="searchNamaTable('searchEarlyBird', 'tableBodyEarlyBird')"
+                style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem;">
+        </div>
+        <div class="mms-table-wrapper" style="overflow-x: auto;">
+            <table class="mms-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Lengkap</th>
+                        <th>No Telp</th>
+                        <th>Email</th>
+                        <th>Kode Referal</th>
+                        <th>Jenis Tiket</th>
+                        <th>Status</th>
+                        <th>Waktu Scan</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBodyEarlyBird">
+                    {% set count_early_bird = namespace(value=1) %}
+                    {% for t in tiket %}
+                    {% if t.jenis_tiket in ['single_eb', 'circle_eb', 'squad_eb'] %}
+                    <tr id="row-tiket-{{ t.id }}">
+                        <td>{{ count_early_bird.value }}</td>
+                        <td style="font-weight: 500;">{{ t.nama }}</td>
+                        <td>{{ t.no_telp }}</td>
+                        <td>{{ t.email }}</td>
+                        <td>{{ t.kode_referal }}</td>
+                        <td><span class="mms-badge mms-badge-info">{{ t.jenis_tiket }}</span></td>
+                        <td>
+                            {% if t.is_used %}
+                            <span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>
+                            {% else %}
+                            <span class="mms-badge mms-badge-warning"><i class="fas fa-clock"></i> Belum</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 0.82rem; color: var(--text-muted);">{{ t.waktu_scan|wib }}</td>
+                        <td>
+                            <div class="action-btns">
+                                {% if t.is_used %}
+                                <form method="POST" action="/reset_tiket/{{ t.id }}" style="display: inline;">
+                                    <button type="submit" class="action-btn action-btn-reset"
+                                        onclick="return confirm('Reset tiket?')"><i class="fas fa-undo"></i></button>
+                                </form>
+                                {% else %}
+                                <button class="action-btn action-btn-hadir" onclick="hadirkanManual('{{ t.id }}', this)"
+                                    title="Hadirkan peserta">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                                {% endif %}
+                                <button class="action-btn action-btn-delete" onclick="hapusTiket('{{ t.id }}', this)"
+                                    title="Hapus data">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% set count_early_bird.value = count_early_bird.value + 1 %}
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="mms-chart-card animate-fade-in-up">
         <h4 style="margin-bottom: 1.5rem;">
             <i class="fas fa-users" style="color: var(--primary-light);"></i>
@@ -108,6 +182,7 @@
 
         <div class="mms-table-wrapper" style="overflow-x: auto;">
             <table class="mms-table">
+
                 <thead>
                     <tr>
                         <th>No</th>
@@ -123,14 +198,18 @@
                 </thead>
 
                 <tbody id="tableBodyNormal">
+
                     {% set count_normal = namespace(value=1) %}
 
                     {% for t in tiket %}
-                    {% if t.jenis_tiket|lower == 'normal' %}
+
+                    {% if t.jenis_tiket == 'normal' or t.jenis_tiket == 'Normal' %}
 
                     <tr id="row-tiket-{{ t.id }}">
 
-                        <td>{{ count_normal.value }}</td>
+                        <td>
+                            {{ count_normal.value }}
+                        </td>
 
                         <td style="font-weight: 500;">
                             {{ t.nama }}
@@ -156,15 +235,19 @@
 
                         <td>
                             {% if t.is_used %}
+
                             <span class="mms-badge mms-badge-success">
                                 <i class="fas fa-check-circle"></i>
                                 Hadir
                             </span>
+
                             {% else %}
+
                             <span class="mms-badge mms-badge-warning">
                                 <i class="fas fa-clock"></i>
                                 Belum
                             </span>
+
                             {% endif %}
                         </td>
 
@@ -214,311 +297,358 @@
                     {% set count_normal.value = count_normal.value + 1 %}
 
                     {% endif %}
+
                     {% endfor %}
 
                 </tbody>
             </table>
         </div>
     </div>
-    {% endblock %}
+    <!-- INI UMUM -->
 
-    {% block scripts %}
-    <script>
-        function toggleExportMenu() {
-            document.getElementById('exportMenu').classList.toggle('show');
+    <!-- INI UMUM-->
+
+    {% if not tiket %}
+    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+        <p>Belum ada data tiket terdaftar.</p>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<div class="mms-modal-overlay" id="resetAllModal">
+    <div class="mms-modal">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚠️</div>
+        <h3>Reset Semua Tiket?</h3>
+        <p>Semua status kehadiran akan direset menjadi "Belum Hadir". Data peserta tetap aman.</p>
+        <div class="modal-actions">
+            <button class="mms-btn mms-btn-outline" onclick="hideResetAllModal()">Batal</button>
+            <form method="POST" action="/reset_semua" style="display: inline;">
+                <button type="submit" class="mms-btn mms-btn-danger">
+                    <i class="fas fa-redo"></i> Ya, Reset
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="mms-modal-overlay" id="hapusSemuaModal">
+    <div class="mms-modal">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🗑️</div>
+        <h3>Hapus Semua Peserta?</h3>
+        <p style="color: var(--danger); font-weight: 600;">PERHATIAN: Semua data peserta akan dihapus permanen dan tidak
+            bisa dikembalikan!</p>
+        <div class="modal-actions">
+            <button class="mms-btn mms-btn-outline" onclick="hideHapusSemuaModal()">Batal</button>
+            <form method="POST" action="/hapus_semua_peserta" style="display: inline;">
+                <button type="submit" class="mms-btn mms-btn-danger"
+                    style="background: linear-gradient(135deg, #8B0000 0%, #5C0000 100%);">
+                    <i class="fas fa-trash-alt"></i> Ya, Hapus Semua
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleExportMenu() {
+        document.getElementById('exportMenu').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.export-dropdown')) {
+            document.getElementById('exportMenu').classList.remove('show');
         }
+    });
 
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.export-dropdown')) {
-                document.getElementById('exportMenu').classList.remove('show');
-            }
+    function changeKuota(delta) {
+        const input = document.getElementById('kuotaInput');
+        let val = parseInt(input.value) || 1;
+        val = Math.max(1, val + delta);
+        input.value = val;
+    }
+
+    function showResetAllModal() {
+        document.getElementById('resetAllModal').classList.add('show');
+    }
+
+    function hideResetAllModal() {
+        document.getElementById('resetAllModal').classList.remove('show');
+    }
+
+    let currentFilter = 'semua';
+
+    function filterTable(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.mms-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilters();
+    }
+
+    function searchTable() {
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#tableBody tr');
+
+        rows.forEach(row => {
+            const status = row.dataset.status;
+            const nama = row.dataset.nama;
+            const jenis_tiket = row.dataset.jenis_tiket; // ganti dari angkatan
+            const kode = row.dataset.kode;
+
+            const matchesFilter = currentFilter === 'semua' || status === currentFilter;
+            const matchesSearch = !searchTerm ||
+                nama.includes(searchTerm) ||
+                jenis_tiket.includes(searchTerm) || // ganti dari angkatan
+                kode.includes(searchTerm);
+
+            row.style.display = (matchesFilter && matchesSearch) ? '' : 'none';
+        });
+    }
+
+    fetch('/api/stats')
+        .then(res => res.json())
+        .then(data => {
+            new Chart(document.getElementById('attendanceChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hadir', 'Belum Hadir'],
+                    datasets: [{
+                        data: [data.hadir, data.belum_hadir],
+                        backgroundColor: ['#5DAE78', '#E5A63B'],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 16,
+                                usePointStyle: true,
+                                font: { family: 'Poppins', size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const angkatanLabels = Object.keys(data.angkatan);
+            const angkatanTotal = angkatanLabels.map(k => data.angkatan[k].total);
+            const angkatanHadir = angkatanLabels.map(k => data.angkatan[k].hadir);
+
+            new Chart(document.getElementById('angkatanChart'), {
+                type: 'bar',
+                data: {
+                    labels: angkatanLabels,
+                    datasets: [
+                        {
+                            label: 'Total',
+                            data: angkatanTotal,
+                            backgroundColor: 'rgba(107, 76, 122, 0.7)',
+                            borderRadius: 8,
+                            borderSkipped: false
+                        },
+                        {
+                            label: 'Hadir',
+                            data: angkatanHadir,
+                            backgroundColor: 'rgba(93, 174, 120, 0.7)',
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, font: { family: 'Inter', size: 11 } },
+                            grid: { color: 'rgba(107,76,122,0.06)' }
+                        },
+                        x: {
+                            ticks: { font: { family: 'Poppins', size: 11 } },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                font: { family: 'Poppins', size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const timeLabels = Object.keys(data.timeline);
+            const timeValues = Object.values(data.timeline);
+
+            new Chart(document.getElementById('timelineChart'), {
+                type: 'line',
+                data: {
+                    labels: timeLabels.length ? timeLabels : ['Belum ada data'],
+                    datasets: [{
+                        label: 'Jumlah Scan',
+                        data: timeValues.length ? timeValues : [0],
+                        borderColor: '#D4A843',
+                        backgroundColor: 'rgba(212, 168, 67, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#D4A843',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, font: { family: 'Inter', size: 11 } },
+                            grid: { color: 'rgba(107,76,122,0.06)' }
+                        },
+                        x: {
+                            ticks: { font: { family: 'Inter', size: 11 } },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                font: { family: 'Poppins', size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
         });
 
-        function changeKuota(delta) {
-            const input = document.getElementById('kuotaInput');
-            let val = parseInt(input.value) || 1;
-            val = Math.max(1, val + delta);
-            input.value = val;
-        }
+    let attendanceChartInstance = null;
+    let angkatanChartInstance = null;
+    let timelineChartInstance = null;
 
-        function showResetAllModal() {
-            document.getElementById('resetAllModal').classList.add('show');
-        }
+    setTimeout(() => {
+        attendanceChartInstance = Chart.getChart('attendanceChart');
+        angkatanChartInstance = Chart.getChart('angkatanChart');
+        timelineChartInstance = Chart.getChart('timelineChart');
+    }, 2000);
 
-        function hideResetAllModal() {
-            document.getElementById('resetAllModal').classList.remove('show');
-        }
-
-        let currentFilter = 'semua';
-
-        function filterTable(filter, btn) {
-            currentFilter = filter;
-            document.querySelectorAll('.mms-tab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            applyFilters();
-        }
-
-        function searchTable() {
-            applyFilters();
-        }
-
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#tableBody tr');
-
-            rows.forEach(row => {
-                const status = row.dataset.status;
-                const nama = row.dataset.nama;
-                const jenis_tiket = row.dataset.jenis_tiket; // ganti dari angkatan
-                const kode = row.dataset.kode;
-
-                const matchesFilter = currentFilter === 'semua' || status === currentFilter;
-                const matchesSearch = !searchTerm ||
-                    nama.includes(searchTerm) ||
-                    jenis_tiket.includes(searchTerm) || // ganti dari angkatan
-                    kode.includes(searchTerm);
-
-                row.style.display = (matchesFilter && matchesSearch) ? '' : 'none';
-            });
-        }
-
+    function updateLiveStats() {
         fetch('/api/stats')
             .then(res => res.json())
             .then(data => {
-                new Chart(document.getElementById('attendanceChart'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Hadir', 'Belum Hadir'],
-                        datasets: [{
-                            data: [data.hadir, data.belum_hadir],
-                            backgroundColor: ['#5DAE78', '#E5A63B'],
-                            borderWidth: 0,
-                            hoverOffset: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        cutout: '65%',
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    padding: 16,
-                                    usePointStyle: true,
-                                    font: { family: 'Poppins', size: 12 }
-                                }
-                            }
-                        }
+                animateValue('liveTotal', data.total);
+                animateValue('liveHadir', data.hadir);
+                animateValue('liveBelum', data.belum_hadir);
+                animateValue('liveSisaKuota', data.sisa_kuota);
+
+                const tabs = document.querySelectorAll('.mms-tab');
+                tabs.forEach(tab => {
+                    const filter = tab.dataset.filter;
+                    const span = tab.querySelector('span');
+                    if (span) {
+                        if (filter === 'semua') span.textContent = `(${data.total})`;
+                        else if (filter === 'hadir') span.textContent = `(${data.hadir})`;
+                        else if (filter === 'belum') span.textContent = `(${data.belum_hadir})`;
                     }
                 });
 
-                const angkatanLabels = Object.keys(data.angkatan);
-                const angkatanTotal = angkatanLabels.map(k => data.angkatan[k].total);
-                const angkatanHadir = angkatanLabels.map(k => data.angkatan[k].hadir);
+                if (attendanceChartInstance) {
+                    attendanceChartInstance.data.datasets[0].data = [data.hadir, data.belum_hadir];
+                    attendanceChartInstance.update('none');
+                }
 
-                new Chart(document.getElementById('angkatanChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: angkatanLabels,
-                        datasets: [
-                            {
-                                label: 'Total',
-                                data: angkatanTotal,
-                                backgroundColor: 'rgba(107, 76, 122, 0.7)',
-                                borderRadius: 8,
-                                borderSkipped: false
-                            },
-                            {
-                                label: 'Hadir',
-                                data: angkatanHadir,
-                                backgroundColor: 'rgba(93, 174, 120, 0.7)',
-                                borderRadius: 8,
-                                borderSkipped: false
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { stepSize: 1, font: { family: 'Inter', size: 11 } },
-                                grid: { color: 'rgba(107,76,122,0.06)' }
-                            },
-                            x: {
-                                ticks: { font: { family: 'Poppins', size: 11 } },
-                                grid: { display: false }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    usePointStyle: true,
-                                    font: { family: 'Poppins', size: 12 }
-                                }
-                            }
-                        }
+                if (angkatanChartInstance) {
+                    const labels = Object.keys(data.angkatan);
+                    const totals = labels.map(k => data.angkatan[k].total);
+                    const hadirs = labels.map(k => data.angkatan[k].hadir);
+                    angkatanChartInstance.data.labels = labels;
+                    angkatanChartInstance.data.datasets[0].data = totals;
+                    angkatanChartInstance.data.datasets[1].data = hadirs;
+                    angkatanChartInstance.update('none');
+                }
+
+                if (timelineChartInstance) {
+                    const tLabels = Object.keys(data.timeline);
+                    const tValues = Object.values(data.timeline);
+                    timelineChartInstance.data.labels = tLabels.length ? tLabels : ['Belum ada data'];
+                    timelineChartInstance.data.datasets[0].data = tValues.length ? tValues : [0];
+                    timelineChartInstance.update('none');
+                }
+
+                if (data.tikets) {
+                    rebuildTable(data.tikets);
+                }
+            })
+            .catch(err => console.warn('Live update error:', err));
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(str || ''));
+        return div.innerHTML;
+    }
+
+    function rebuildTable(tikets) {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+
+        const currentRowCount = tbody.querySelectorAll('tr').length;
+        if (currentRowCount === tikets.length) {
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach((row, i) => {
+                if (i < tikets.length) {
+                    const t = tikets[i];
+                    const statusCell = row.cells[6]; // update index karena kolom bertambah
+                    if (t.is_used) {
+                        statusCell.innerHTML = '<span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>';
+                    } else {
+                        statusCell.innerHTML = '<span class="mms-badge mms-badge-warning"><i class="fas fa-clock"></i> Belum</span>';
                     }
-                });
-
-                const timeLabels = Object.keys(data.timeline);
-                const timeValues = Object.values(data.timeline);
-
-                new Chart(document.getElementById('timelineChart'), {
-                    type: 'line',
-                    data: {
-                        labels: timeLabels.length ? timeLabels : ['Belum ada data'],
-                        datasets: [{
-                            label: 'Jumlah Scan',
-                            data: timeValues.length ? timeValues : [0],
-                            borderColor: '#D4A843',
-                            backgroundColor: 'rgba(212, 168, 67, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#D4A843',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { stepSize: 1, font: { family: 'Inter', size: 11 } },
-                                grid: { color: 'rgba(107,76,122,0.06)' }
-                            },
-                            x: {
-                                ticks: { font: { family: 'Inter', size: 11 } },
-                                grid: { display: false }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    usePointStyle: true,
-                                    font: { family: 'Poppins', size: 12 }
-                                }
-                            }
-                        }
-                    }
-                });
+                    row.dataset.status = t.is_used ? 'hadir' : 'belum';
+                    row.cells[7].textContent = t.waktu_scan;
+                }
             });
-
-        let attendanceChartInstance = null;
-        let angkatanChartInstance = null;
-        let timelineChartInstance = null;
-
-        setTimeout(() => {
-            attendanceChartInstance = Chart.getChart('attendanceChart');
-            angkatanChartInstance = Chart.getChart('angkatanChart');
-            timelineChartInstance = Chart.getChart('timelineChart');
-        }, 2000);
-
-        function updateLiveStats() {
-            fetch('/api/stats')
-                .then(res => res.json())
-                .then(data => {
-                    animateValue('liveTotal', data.total);
-                    animateValue('liveHadir', data.hadir);
-                    animateValue('liveBelum', data.belum_hadir);
-                    animateValue('liveSisaKuota', data.sisa_kuota);
-
-                    const tabs = document.querySelectorAll('.mms-tab');
-                    tabs.forEach(tab => {
-                        const filter = tab.dataset.filter;
-                        const span = tab.querySelector('span');
-                        if (span) {
-                            if (filter === 'semua') span.textContent = `(${data.total})`;
-                            else if (filter === 'hadir') span.textContent = `(${data.hadir})`;
-                            else if (filter === 'belum') span.textContent = `(${data.belum_hadir})`;
-                        }
-                    });
-
-                    if (attendanceChartInstance) {
-                        attendanceChartInstance.data.datasets[0].data = [data.hadir, data.belum_hadir];
-                        attendanceChartInstance.update('none');
-                    }
-
-                    if (angkatanChartInstance) {
-                        const labels = Object.keys(data.angkatan);
-                        const totals = labels.map(k => data.angkatan[k].total);
-                        const hadirs = labels.map(k => data.angkatan[k].hadir);
-                        angkatanChartInstance.data.labels = labels;
-                        angkatanChartInstance.data.datasets[0].data = totals;
-                        angkatanChartInstance.data.datasets[1].data = hadirs;
-                        angkatanChartInstance.update('none');
-                    }
-
-                    if (timelineChartInstance) {
-                        const tLabels = Object.keys(data.timeline);
-                        const tValues = Object.values(data.timeline);
-                        timelineChartInstance.data.labels = tLabels.length ? tLabels : ['Belum ada data'];
-                        timelineChartInstance.data.datasets[0].data = tValues.length ? tValues : [0];
-                        timelineChartInstance.update('none');
-                    }
-
-                    if (data.tikets) {
-                        rebuildTable(data.tikets);
-                    }
-                })
-                .catch(err => console.warn('Live update error:', err));
+            return;
         }
 
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.appendChild(document.createTextNode(str || ''));
-            return div.innerHTML;
-        }
-
-        function rebuildTable(tikets) {
-            const tbody = document.getElementById('tableBody');
-            if (!tbody) return;
-
-            const currentRowCount = tbody.querySelectorAll('tr').length;
-            if (currentRowCount === tikets.length) {
-                const rows = tbody.querySelectorAll('tr');
-                rows.forEach((row, i) => {
-                    if (i < tikets.length) {
-                        const t = tikets[i];
-                        const statusCell = row.cells[6]; // update index karena kolom bertambah
-                        if (t.is_used) {
-                            statusCell.innerHTML = '<span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>';
-                        } else {
-                            statusCell.innerHTML = '<span class="mms-badge mms-badge-warning"><i class="fas fa-clock"></i> Belum</span>';
-                        }
-                        row.dataset.status = t.is_used ? 'hadir' : 'belum';
-                        row.cells[7].textContent = t.waktu_scan;
-                    }
-                });
-                return;
-            }
-
-            let html = '';
-            tikets.forEach((t, i) => {
-                const status = t.is_used ? 'hadir' : 'belum';
-                const eName = escapeHtml(t.nama);
-                const eJenis = escapeHtml(t.jenis_tiket); // ganti dari eAng
-                const eKode = escapeHtml(t.kode);
-                const eTelp = escapeHtml(t.no_telp);
-                const eEmail = escapeHtml(t.email);
-                const eReferal = escapeHtml(t.kode_referal);
-                const statusBadge = t.is_used
-                    ? '<span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>'
-                    : '<span class="mms-badge mms-badge-warning"><i class="fas fa-clock"></i> Belum</span>';
-                const resetBtn = t.is_used
-                    ? `<form method="POST" action="/reset_tiket/${t.id}" style="display: inline;">
+        let html = '';
+        tikets.forEach((t, i) => {
+            const status = t.is_used ? 'hadir' : 'belum';
+            const eName = escapeHtml(t.nama);
+            const eJenis = escapeHtml(t.jenis_tiket); // ganti dari eAng
+            const eKode = escapeHtml(t.kode);
+            const eTelp = escapeHtml(t.no_telp);
+            const eEmail = escapeHtml(t.email);
+            const eReferal = escapeHtml(t.kode_referal);
+            const statusBadge = t.is_used
+                ? '<span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>'
+                : '<span class="mms-badge mms-badge-warning"><i class="fas fa-clock"></i> Belum</span>';
+            const resetBtn = t.is_used
+                ? `<form method="POST" action="/reset_tiket/${t.id}" style="display: inline;">
                  <button type="submit" class="action-btn action-btn-reset" onclick="return confirm('Reset tiket ${eKode}?')">
                    <i class="fas fa-undo"></i>
                  </button>
                </form>`
-                    : `<button class="action-btn action-btn-hadir" onclick="hadirkanManual('${t.id}', this)" title="Hadirkan peserta">
+                : `<button class="action-btn action-btn-hadir" onclick="hadirkanManual('${t.id}', this)" title="Hadirkan peserta">
                  <i class="fas fa-user-check"></i>
                </button>`;
 
-                html += `<tr id="row-tiket-${t.id}" data-status="${status}" data-nama="${eName.toLowerCase()}" data-jenis_tiket="${eJenis.toLowerCase()}" data-kode="${eKode.toLowerCase()}">
+            html += `<tr id="row-tiket-${t.id}" data-status="${status}" data-nama="${eName.toLowerCase()}" data-jenis_tiket="${eJenis.toLowerCase()}" data-kode="${eKode.toLowerCase()}">
             <td>${i + 1}</td>
             <td style="font-weight: 500;">${eName}</td>
             <td>${eTelp}</td>
@@ -536,141 +666,141 @@
                 </div>
             </td>
         </tr>`;
-            });
-            tbody.innerHTML = html;
-            applyFilters();
-        }
+        });
+        tbody.innerHTML = html;
+        applyFilters();
+    }
 
-        function animateValue(elementId, newVal) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            const oldVal = parseInt(el.textContent) || 0;
-            if (oldVal !== newVal) {
-                el.textContent = newVal;
-                el.style.transform = 'scale(1.2)';
-                el.style.transition = 'transform 0.3s ease';
-                setTimeout(() => { el.style.transform = 'scale(1)'; }, 300);
+    function animateValue(elementId, newVal) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        const oldVal = parseInt(el.textContent) || 0;
+        if (oldVal !== newVal) {
+            el.textContent = newVal;
+            el.style.transform = 'scale(1.2)';
+            el.style.transition = 'transform 0.3s ease';
+            setTimeout(() => { el.style.transform = 'scale(1)'; }, 300);
+        }
+    }
+
+    // --- SEARCH NAMA PESERTA (untuk tabel Early Bird & Normal) ---
+    function searchNamaTable(inputId, tbodyId) {
+        const keyword = document.getElementById(inputId).value.trim().toLowerCase();
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const namaCell = row.cells[1]; // kolom "Nama Lengkap"
+            if (!namaCell) return;
+            const nama = namaCell.textContent.toLowerCase();
+            row.style.display = nama.includes(keyword) ? '' : 'none';
+        });
+    }
+
+    // --- HAPUS TIKET LANGSUNG (AJAX, tanpa reload halaman) ---
+    function hapusTiket(tiketId, btnElement) {
+        if (!confirm('Hapus data peserta ini? Tindakan ini tidak bisa dibatalkan.')) return;
+
+        btnElement.disabled = true;
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch('/hapus_tiket/' + tiketId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
-        }
-
-        // --- SEARCH NAMA PESERTA (untuk tabel Early Bird & Normal) ---
-        function searchNamaTable(inputId, tbodyId) {
-            const keyword = document.getElementById(inputId).value.trim().toLowerCase();
-            const tbody = document.getElementById(tbodyId);
-            if (!tbody) return;
-
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const namaCell = row.cells[1]; // kolom "Nama Lengkap"
-                if (!namaCell) return;
-                const nama = namaCell.textContent.toLowerCase();
-                row.style.display = nama.includes(keyword) ? '' : 'none';
-            });
-        }
-
-        // --- HAPUS TIKET LANGSUNG (AJAX, tanpa reload halaman) ---
-        function hapusTiket(tiketId, btnElement) {
-            if (!confirm('Hapus data peserta ini? Tindakan ini tidak bisa dibatalkan.')) return;
-
-            btnElement.disabled = true;
-            btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-            fetch('/hapus_tiket/' + tiketId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const row = document.getElementById('row-tiket-' + tiketId);
-                        if (row) {
-                            row.style.transition = 'opacity 0.25s ease';
-                            row.style.opacity = '0';
-                            setTimeout(() => {
-                                row.remove();
-                                updateLiveStats();
-                            }, 250);
-                        } else {
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.getElementById('row-tiket-' + tiketId);
+                    if (row) {
+                        row.style.transition = 'opacity 0.25s ease';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
                             updateLiveStats();
-                        }
+                        }, 250);
                     } else {
-                        alert('Gagal menghapus data: ' + (data.message || 'Unknown error'));
-                        btnElement.disabled = false;
-                        btnElement.innerHTML = '<i class="fas fa-trash"></i>';
+                        updateLiveStats();
                     }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                    alert('Koneksi bermasalah!');
+                } else {
+                    alert('Gagal menghapus data: ' + (data.message || 'Unknown error'));
                     btnElement.disabled = false;
                     btnElement.innerHTML = '<i class="fas fa-trash"></i>';
-                });
-        }
-
-        setInterval(updateLiveStats, 5000);
-    </script>
-
-    <script>
-        function showHapusSemuaModal() {
-            document.getElementById('hapusSemuaModal').classList.add('show');
-        }
-
-        function hideHapusSemuaModal() {
-            document.getElementById('hapusSemuaModal').classList.remove('show');
-        }
-
-        function hadirkanManual(tiketId, btnElement) {
-            if (!confirm('Hadirkan peserta ini secara manual?')) return;
-
-            btnElement.disabled = true;
-            btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-            fetch('/hadirkan_manual', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: tiketId })
+                }
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const td = btnElement.parentElement;
-                        td.innerHTML = '<span class="mms-badge mms-badge-success" style="font-size: 0.72rem;"><i class="fas fa-check"></i> Sudah</span>';
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Koneksi bermasalah!');
+                btnElement.disabled = false;
+                btnElement.innerHTML = '<i class="fas fa-trash"></i>';
+            });
+    }
 
-                        const row = td.parentElement;
-                        const statusCell = row.querySelector('td:nth-child(7)');
-                        if (statusCell) {
-                            statusCell.innerHTML = '<span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>';
-                        }
+    setInterval(updateLiveStats, 5000);
+</script>
 
-                        const actionCell = row.querySelector('td:nth-child(9)');
-                        if (actionCell) {
-                            const existingDelete = actionCell.querySelector('.action-btn-delete');
-                            const deleteHtml = existingDelete ? existingDelete.outerHTML : '';
-                            actionCell.innerHTML = `<div class="action-btns">
+<script>
+    function showHapusSemuaModal() {
+        document.getElementById('hapusSemuaModal').classList.add('show');
+    }
+
+    function hideHapusSemuaModal() {
+        document.getElementById('hapusSemuaModal').classList.remove('show');
+    }
+
+    function hadirkanManual(tiketId, btnElement) {
+        if (!confirm('Hadirkan peserta ini secara manual?')) return;
+
+        btnElement.disabled = true;
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch('/hadirkan_manual', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: tiketId })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const td = btnElement.parentElement;
+                    td.innerHTML = '<span class="mms-badge mms-badge-success" style="font-size: 0.72rem;"><i class="fas fa-check"></i> Sudah</span>';
+
+                    const row = td.parentElement;
+                    const statusCell = row.querySelector('td:nth-child(7)');
+                    if (statusCell) {
+                        statusCell.innerHTML = '<span class="mms-badge mms-badge-success"><i class="fas fa-check-circle"></i> Hadir</span>';
+                    }
+
+                    const actionCell = row.querySelector('td:nth-child(9)');
+                    if (actionCell) {
+                        const existingDelete = actionCell.querySelector('.action-btn-delete');
+                        const deleteHtml = existingDelete ? existingDelete.outerHTML : '';
+                        actionCell.innerHTML = `<div class="action-btns">
                         <form method="POST" action="/reset_tiket/${tiketId}" style="display: inline;">
                             <button type="submit" class="action-btn action-btn-reset" onclick="return confirm('Reset tiket?')"><i class="fas fa-undo"></i></button>
                         </form>
                         ${deleteHtml}
                     </div>`;
-                        }
-
-                        updateLiveStats();
-                    } else {
-                        alert('Gagal menghadirkan peserta: ' + (data.message || 'Unknown error'));
-                        btnElement.disabled = false;
-                        btnElement.innerHTML = '<i class="fas fa-user-check"></i>';
                     }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                    alert('Koneksi bermasalah!');
+
+                    updateLiveStats();
+                } else {
+                    alert('Gagal menghadirkan peserta: ' + (data.message || 'Unknown error'));
                     btnElement.disabled = false;
                     btnElement.innerHTML = '<i class="fas fa-user-check"></i>';
-                });
-        }
-    </script>
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Koneksi bermasalah!');
+                btnElement.disabled = false;
+                btnElement.innerHTML = '<i class="fas fa-user-check"></i>';
+            });
+    }
+</script>
 
-    {% endblock %}
+{% endblock %}
