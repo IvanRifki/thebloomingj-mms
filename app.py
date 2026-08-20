@@ -152,12 +152,7 @@ def upload_bukti_transfer(file):
     content_type = content_type_map[ext]
 
     try:
-        storage_client = create_client(
-            supabase_url,
-            supabase_key
-        )
-
-        bucket = storage_client.storage().from_(
+        bucket = supabase.storage.from_(
             'bukti-transfer'
         )
 
@@ -187,7 +182,6 @@ def upload_bukti_transfer(file):
             'SUPABASE STORAGE ERROR:',
             repr(e)
         )
-
         raise
 
 

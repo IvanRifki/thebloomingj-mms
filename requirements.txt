@@ -8,4 +8,4 @@ openpyxl
 reportlab
 qrcode
 Pillow
-supabase==1.0.0
+supabase==2.31.0
