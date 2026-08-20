@@ -39,7 +39,7 @@ try:
 except Exception as e:
     print(f"[WARNING] db.create_all() gagal: {e}")
 
-# ini jgn lupa di isi
+
 supabase_url = os.environ.get('SUPABASE_URL')
 supabase_key = os.environ.get('SUPABASE_KEY')
 supabase = create_client(supabase_url, supabase_key)
