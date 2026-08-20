@@ -2010,3 +2010,12 @@ a:hover {
     font-family: 'Playfair Display', serif;
     line-height: 1.2;
 }
+
+.fullpage-center {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
+}
