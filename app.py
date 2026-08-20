@@ -189,7 +189,6 @@ def index():
 
 @app.route('/daftar', methods=['GET', 'POST'])
 def pendaftaran():
-
     kuota = get_kuota()
 
     total_terdaftar = db.session.query(
@@ -217,7 +216,6 @@ def pendaftaran():
         return redirect('/normal_daftar')
 
     if request.method == 'POST':
-
         total_terdaftar = db.session.query(
             db.func.sum(Tiket.jumlah_peserta)
         ).scalar() or 0
@@ -252,7 +250,6 @@ def pendaftaran():
             'circle_eb',
             'squad_eb'
         ]:
-
             tiket_eb = Tiket.query.filter(
                 Tiket.jenis_tiket.in_([
                     'single_eb',
@@ -272,11 +269,29 @@ def pendaftaran():
                     'Gunakan kode referal untuk mendapatkan potongan harga (opsional).',
                     'eb-penuh'
                 )
+
                 return redirect('/normal_daftar?status=eb_penuh')
 
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
-        bukti_url = upload_bukti_transfer(request.files.get('bukti'))
+        # DEBUG UPLOAD BUKTI TRANSFER
+        try:
+            bukti_url = upload_bukti_transfer(
+                request.files.get('bukti')
+            )
+
+            print("=== BUKTI URL ===", bukti_url)
+
+        except Exception:
+            import traceback
+
+            print("=== ERROR UPLOAD BUKTI ===")
+            traceback.print_exc()
+
+            return (
+                f"<pre>{traceback.format_exc()}</pre>",
+                500
+            )
 
         tiket_baru = Tiket(
             kode=kode,
@@ -312,7 +327,6 @@ def pendaftaran():
 
 @app.route('/normal_daftar', methods=['GET', 'POST'])
 def pendaftaran_normal():
-
     KODE_REFERAL_VALID = [
         'MMS2026',
         'SAHABATMMS',
@@ -342,7 +356,6 @@ def pendaftaran_normal():
         return redirect('/habis')
 
     if request.method == 'POST':
-
         total_terdaftar = db.session.query(
             db.func.sum(Tiket.jumlah_peserta)
         ).scalar() or 0
@@ -387,7 +400,21 @@ def pendaftaran_normal():
 
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
-        bukti_url = upload_bukti_transfer(request.files.get('bukti'))
+        try:
+            bukti_url = upload_bukti_transfer(
+                request.files.get('bukti')
+            )
+            print("=== BUKTI URL ===", bukti_url)
+
+        except Exception:
+            import traceback
+            print("=== ERROR UPLOAD BUKTI ===")
+            traceback.print_exc()
+
+            return (
+                f"<pre>{traceback.format_exc()}</pre>",
+                500
+            )
 
         tiket_baru = Tiket(
             kode=kode,
