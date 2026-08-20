@@ -152,12 +152,12 @@ def upload_bukti_transfer(file):
     content_type = content_type_map[ext]
 
     try:
-        storage = create_client(
+        storage_client = create_client(
             supabase_url,
             supabase_key
         )
 
-        bucket = storage.storage.from_(
+        bucket = storage_client.storage().from_(
             'bukti-transfer'
         )
 
