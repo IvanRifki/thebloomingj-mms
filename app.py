@@ -1,22 +1,20 @@
-from datetime import date
-from flask import Flask, Response, redirect, render_template, request, url_for, jsonify, send_file, flash, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
-from flask import request, jsonify
-import uuid
-import uuid as uuid_lib
-import os
-from supabase import create_client, Client
-from supabase_client import supabase
-from dotenv import load_dotenv
-import io
-import csv
+
 import base64
-import qrcode
+import csv
+import io
+import os
 import re
+import uuid
+
+import qrcode
+from dotenv import load_dotenv
+from flask import Flask, Response, redirect, render_template, request, url_for, jsonify, send_file, flash, send_from_directory
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_sqlalchemy import SQLAlchemy
+from supabase import create_client, Client
+from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
 
@@ -25,14 +23,20 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 
 db_url = os.environ.get(
-    'DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'tiket.db'))
+    'DATABASE_URL',
+    'sqlite:///' + os.path.join(basedir, 'tiket.db')
+)
+
 if db_url.startswith('postgres://'):
     db_url = db_url.replace('postgres://', 'postgresql://', 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SECRET_KEY'] = os.environ.get(
-    'SECRET_KEY', 'the-blooming-journey-secret-key-2026')
+    'SECRET_KEY',
+    'the-blooming-journey-secret-key-2026'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 try:
@@ -41,10 +45,13 @@ try:
 except Exception as e:
     print(f"[WARNING] db.create_all() gagal: {e}")
 
-
 supabase_url = os.environ.get('SUPABASE_URL')
 supabase_key = os.environ.get('SUPABASE_KEY')
-supabase = create_client(supabase_url, supabase_key)
+
+supabase = create_client(
+    supabase_url,
+    supabase_key
+)
 
 WIB = ZoneInfo('Asia/Jakarta')
 
@@ -69,7 +76,7 @@ def wib_filter(dt):
 
 
 def upload_bukti_transfer(file):
-    """Upload file bukti transfer ke Supabase Storage, return public URL atau None"""
+    """Upload bukti transfer ke Supabase Storage."""
     if not file or not file.filename:
         return None
 
@@ -81,10 +88,15 @@ def upload_bukti_transfer(file):
     supabase.storage.from_('bukti-transfer').upload(
         filename,
         file_bytes,
-        {"content-type": file.content_type}
+        {
+            "content-type": file.content_type,
+            "upsert": "false"
+        }
     )
 
-    return supabase.storage.from_('bukti-transfer').get_public_url(filename)
+    return supabase.storage.from_(
+        'bukti-transfer'
+    ).get_public_url(filename)
 
 
 def sanitize_input(text, max_length=100):
@@ -189,6 +201,7 @@ def index():
 
 @app.route('/daftar', methods=['GET', 'POST'])
 def pendaftaran():
+
     kuota = get_kuota()
 
     total_terdaftar = db.session.query(
@@ -216,6 +229,7 @@ def pendaftaran():
         return redirect('/normal_daftar')
 
     if request.method == 'POST':
+
         total_terdaftar = db.session.query(
             db.func.sum(Tiket.jumlah_peserta)
         ).scalar() or 0
@@ -250,6 +264,7 @@ def pendaftaran():
             'circle_eb',
             'squad_eb'
         ]:
+
             tiket_eb = Tiket.query.filter(
                 Tiket.jenis_tiket.in_([
                     'single_eb',
@@ -269,29 +284,14 @@ def pendaftaran():
                     'Gunakan kode referal untuk mendapatkan potongan harga (opsional).',
                     'eb-penuh'
                 )
-
                 return redirect('/normal_daftar?status=eb_penuh')
 
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
-        # DEBUG UPLOAD BUKTI TRANSFER
-        try:
-            bukti_url = upload_bukti_transfer(
-                request.files.get('bukti')
-            )
-
-            print("=== BUKTI URL ===", bukti_url)
-
-        except Exception:
-            import traceback
-
-            print("=== ERROR UPLOAD BUKTI ===")
-            traceback.print_exc()
-
-            return (
-                f"<pre>{traceback.format_exc()}</pre>",
-                500
-            )
+        # Upload bukti transfer
+        bukti_url = upload_bukti_transfer(
+            request.files.get('bukti')
+        )
 
         tiket_baru = Tiket(
             kode=kode,
@@ -327,6 +327,7 @@ def pendaftaran():
 
 @app.route('/normal_daftar', methods=['GET', 'POST'])
 def pendaftaran_normal():
+
     KODE_REFERAL_VALID = [
         'MMS2026',
         'SAHABATMMS',
@@ -356,6 +357,7 @@ def pendaftaran_normal():
         return redirect('/habis')
 
     if request.method == 'POST':
+
         total_terdaftar = db.session.query(
             db.func.sum(Tiket.jumlah_peserta)
         ).scalar() or 0
@@ -400,21 +402,10 @@ def pendaftaran_normal():
 
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
-        try:
-            bukti_url = upload_bukti_transfer(
-                request.files.get('bukti')
-            )
-            print("=== BUKTI URL ===", bukti_url)
-
-        except Exception:
-            import traceback
-            print("=== ERROR UPLOAD BUKTI ===")
-            traceback.print_exc()
-
-            return (
-                f"<pre>{traceback.format_exc()}</pre>",
-                500
-            )
+        # Upload bukti transfer
+        bukti_url = upload_bukti_transfer(
+            request.files.get('bukti')
+        )
 
         tiket_baru = Tiket(
             kode=kode,
