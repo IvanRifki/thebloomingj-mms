@@ -234,16 +234,30 @@ def pendaftaran():
 
 @app.route('/normal_daftar', methods=['GET', 'POST'])
 def pendaftaran_normal():
-    KODE_REFERAL_VALID = ['MMS2026', 'SAHABATMMS', 'BLOOMING01']
+
+    KODE_REFERAL_VALID = [
+        'MMS2026',
+        'SAHABATMMS',
+        'BLOOMING01'
+    ]
 
     if request.method == 'POST':
+
+        # ==========================================
+        # CEK KUOTA
+        # ==========================================
         kuota = get_kuota()
+
         total_terdaftar = db.session.query(
-            db.func.sum(Tiket.jumlah_peserta)).scalar() or 0
+            db.func.sum(Tiket.jumlah_peserta)
+        ).scalar() or 0
 
         if total_terdaftar >= kuota:
             return redirect('/habis')
 
+        # ==========================================
+        # AMBIL DATA FORM
+        # ==========================================
         nama = sanitize_input(request.form.get('nama'))
         no_telp = sanitize_input(request.form.get('telp'))
         email = sanitize_input(request.form.get('email'))
@@ -253,50 +267,107 @@ def pendaftaran_normal():
             flash('Nama wajib diisi!', 'danger')
             return redirect('/normal_daftar')
 
+        # ==========================================
+        # JENIS TIKET
+        # ==========================================
         jenis_tiket = 'normal'
         peserta_baru = 1
 
+        # ==========================================
+        # CEK KUOTA UMUM
+        # ==========================================
         if total_terdaftar + peserta_baru > kuota:
             return redirect('/habis')
 
+        # ==========================================
+        # CEK LIMIT TIKET NORMAL
+        # ==========================================
         limit_normal = get_limit_normal()
-        tiket_normal = Tiket.query.filter_by(jenis_tiket='normal').all()
-        total_normal = sum(t.jumlah_peserta for t in tiket_normal)
+
+        tiket_normal = Tiket.query.filter_by(
+            jenis_tiket='normal'
+        ).all()
+
+        total_normal = sum(
+            t.jumlah_peserta for t in tiket_normal
+        )
 
         if total_normal + peserta_baru > limit_normal:
             return redirect('/habis')
 
-        # validasi kode referal di backend (harga final gak boleh cuma dipercaya dari frontend)
+        # ==========================================
+        # VALIDASI REFERAL DI BACKEND
+        # ==========================================
         kode_ref_upper = (kode_referal or '').strip().upper()
-        harga_final = 388000 if kode_ref_upper in KODE_REFERAL_VALID else 389000
 
+        if kode_ref_upper in KODE_REFERAL_VALID:
+            harga_final = 388000
+            kode_referal_final = kode_ref_upper
+        else:
+            harga_final = 389000
+            kode_referal_final = kode_referal or None
+
+        # ==========================================
+        # BUAT KODE TIKET
+        # ==========================================
         kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
 
+        # ==========================================
+        # SIMPAN DATA PESERTA
+        # ==========================================
         tiket_baru = Tiket(
             kode=kode,
             nama=nama,
             no_telp=no_telp,
             email=email,
-            kode_referal=kode_referal,
-            jenis_tiket=jenis_tiket,
-            jumlah_peserta=peserta_baru,
+            kode_referal=kode_referal_final,
+            jenis_tiket='normal',
+            jumlah_peserta=1,
             harga=harga_final,
             waktu_daftar=wib_now()
         )
+
         db.session.add(tiket_baru)
         db.session.commit()
 
-        qr_base64 = generate_qr_base64(kode)
+        # ==========================================
+        # SETELAH BERHASIL → /sukses
+        # ==========================================
+        return redirect(
+            url_for(
+                'sukses',
+                kode=kode
+            )
+        )
 
-        return render_template('sukses.html',
-                               nama=nama,
-                               kode=kode,
-                               angkatan=jenis_tiket,
-                               qr_base64=qr_base64,
-                               waktu_daftar=format_wib(wib_now())
-                               )
-
+    # GET
     return render_template('normal_daftar.html')
+
+
+@app.route('/sukses')
+def sukses():
+    kode = request.args.get('kode')
+
+    if not kode:
+        flash('Data pendaftaran tidak ditemukan.', 'danger')
+        return redirect('/normal_daftar')
+
+    tiket = Tiket.query.filter_by(kode=kode).first()
+
+    if not tiket:
+        flash('Data tiket tidak ditemukan.', 'danger')
+        return redirect('/normal_daftar')
+
+    qr_base64 = generate_qr_base64(kode)
+
+    return render_template(
+        'sukses.html',
+        nama=tiket.nama,
+        kode=tiket.kode,
+        angkatan=tiket.jenis_tiket,
+        qr_base64=qr_base64,
+        waktu_daftar=format_wib(tiket.waktu_daftar)
+    )
 
 
 @app.route('/hapus_tiket/<int:tiket_id>', methods=['POST'])
