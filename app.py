@@ -1,17 +1,34 @@
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
-
 import base64
 import csv
 import io
 import os
 import re
 import uuid
-
 import qrcode
+
 from dotenv import load_dotenv
-from flask import Flask, Response, redirect, render_template, request, url_for, jsonify, send_file, flash, send_from_directory
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask import (
+    Flask,
+    Response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+    jsonify,
+    send_file,
+    flash,
+    send_from_directory
+)
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    logout_user,
+    login_required,
+    current_user
+)
 from flask_sqlalchemy import SQLAlchemy
 from supabase import create_client, Client
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -63,10 +80,12 @@ def wib_now():
 def format_wib(dt):
     if dt is None:
         return '-'
+
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=WIB)
     else:
         dt = dt.astimezone(WIB)
+
     return dt.strftime('%d/%m/%Y %H:%M WIB')
 
 
@@ -77,33 +96,63 @@ def wib_filter(dt):
 
 def upload_bukti_transfer(file):
     """Upload bukti transfer ke Supabase Storage."""
+
     if not file or not file.filename:
         return None
 
-    ext = file.filename.rsplit('.', 1)[-1].lower()
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    max_size = 3 * 1024 * 1024
 
     file_bytes = file.read()
 
-    supabase.storage.from_('bukti-transfer').upload(
+    if len(file_bytes) > max_size:
+        raise ValueError(
+            'Ukuran bukti transfer maksimal 3 MB.'
+        )
+
+    ext = file.filename.rsplit('.', 1)[-1].lower()
+
+    allowed_extensions = {
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf'
+    }
+
+    if ext not in allowed_extensions:
+        raise ValueError(
+            'Format bukti transfer harus JPG, PNG, JPEG, atau PDF.'
+        )
+
+    filename = f"{uuid.uuid4().hex}.{ext}"
+
+    content_type = file.content_type or 'application/octet-stream'
+
+    storage = supabase.storage()
+    bucket = storage.from_('bukti-transfer')
+
+    bucket.upload(
         filename,
         file_bytes,
         {
-            "content-type": file.content_type,
-            "upsert": "false"
+            'content-type': content_type,
+            'upsert': False
         }
     )
 
-    return supabase.storage.from_(
-        'bukti-transfer'
-    ).get_public_url(filename)
+    return bucket.get_public_url(filename)
 
 
 def sanitize_input(text, max_length=100):
     if not text:
         return ''
+
     cleaned = re.sub(r'<[^>]+>', '', text)
-    cleaned = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', cleaned)
+    cleaned = re.sub(
+        r'[\x00-\x08\x0b\x0c\x0e-\x1f]',
+        '',
+        cleaned
+    )
+
     return cleaned.strip()[:max_length]
 
 
@@ -123,46 +172,82 @@ class User(UserMixin, db.Model):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(
+            self.password_hash,
+            password
+        )
 
 
 class Tiket(db.Model):
     __tablename__ = 'tiket'
+
     id = db.Column(db.Integer, primary_key=True)
-    kode = db.Column(db.String(10), unique=True, nullable=False)
+    kode = db.Column(
+        db.String(10),
+        unique=True,
+        nullable=False
+    )
     nama = db.Column(db.String(100))
     no_telp = db.Column(db.String(20))
     email = db.Column(db.String(100))
     kode_referal = db.Column(db.String(50))
     jenis_tiket = db.Column(db.String(50))
-    jumlah_peserta = db.Column(db.Integer, default=1)
-    is_used = db.Column(db.Boolean, default=False)
-    waktu_daftar = db.Column(db.DateTime, default=wib_now)
-    waktu_scan = db.Column(db.DateTime, nullable=True)
-    bukti_transfer = db.Column(db.String(255), nullable=True)
-    bukti_terverifikasi = db.Column(db.Boolean, default=False)
+    jumlah_peserta = db.Column(
+        db.Integer,
+        default=1
+    )
+    is_used = db.Column(
+        db.Boolean,
+        default=False
+    )
+    waktu_daftar = db.Column(
+        db.DateTime,
+        default=wib_now
+    )
+    waktu_scan = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+    bukti_transfer = db.Column(
+        db.String(255),
+        nullable=True
+    )
+    bukti_terverifikasi = db.Column(
+        db.Boolean,
+        default=False
+    )
 
 
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(50), unique=True, nullable=False)
-    value = db.Column(db.String(200), nullable=False)
+    key = db.Column(
+        db.String(50),
+        unique=True,
+        nullable=False
+    )
+    value = db.Column(
+        db.String(200),
+        nullable=False
+    )
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# kuotanya
-
 
 def get_kuota():
-    setting = Setting.query.filter_by(key='kuota').first()
+    setting = Setting.query.filter_by(
+        key='kuota'
+    ).first()
+
     return int(setting.value) if setting else 320
 
 
 def set_kuota(kuota_baru):
-    setting = Setting.query.filter_by(key='kuota').first()
+    setting = Setting.query.filter_by(
+        key='kuota'
+    ).first()
 
     if setting:
         setting.value = str(kuota_baru)
@@ -177,21 +262,31 @@ def set_kuota(kuota_baru):
 
 
 def get_limit_early_bird():
-    setting = Setting.query.filter_by(key='limit_early_bird').first()
+    setting = Setting.query.filter_by(
+        key='limit_early_bird'
+    ).first()
+
     return int(setting.value) if setting else 100
 
 
 def get_limit_normal():
-    setting = Setting.query.filter_by(key='limit_normal').first()
+    setting = Setting.query.filter_by(
+        key='limit_normal'
+    ).first()
+
     return int(setting.value) if setting else 220
 
 
 def generate_qr_base64(data):
     img = qrcode.make(data)
+
     buffer = io.BytesIO()
     img.save(buffer, format='PNG')
     buffer.seek(0)
-    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+    return base64.b64encode(
+        buffer.getvalue()
+    ).decode('utf-8')
 
 
 @app.route('/')
@@ -237,16 +332,32 @@ def pendaftaran():
         if total_terdaftar >= kuota:
             return redirect('/habis')
 
-        nama = sanitize_input(request.form.get('nama'))
-        no_telp = sanitize_input(request.form.get('telp'))
-        email = sanitize_input(request.form.get('email'))
-        kode_referal = sanitize_input(request.form.get('ref'))
+        nama = sanitize_input(
+            request.form.get('nama')
+        )
+
+        no_telp = sanitize_input(
+            request.form.get('telp')
+        )
+
+        email = sanitize_input(
+            request.form.get('email')
+        )
+
+        kode_referal = sanitize_input(
+            request.form.get('ref')
+        )
 
         if not nama:
-            flash('Nama wajib diisi!', 'danger')
+            flash(
+                'Nama wajib diisi!',
+                'danger'
+            )
             return redirect('/daftar')
 
-        jenis_tiket = request.form.get('paket_tiket')
+        jenis_tiket = request.form.get(
+            'paket_tiket'
+        )
 
         map_peserta = {
             'single_eb': 1,
@@ -254,7 +365,10 @@ def pendaftaran():
             'squad_eb': 5
         }
 
-        peserta_baru = map_peserta.get(jenis_tiket, 1)
+        peserta_baru = map_peserta.get(
+            jenis_tiket,
+            1
+        )
 
         if total_terdaftar + peserta_baru > kuota:
             return redirect('/habis')
@@ -277,21 +391,40 @@ def pendaftaran():
                 t.jumlah_peserta for t in tiket_eb
             )
 
-            if total_early_bird + peserta_baru > limit_early_bird:
+            if (
+                total_early_bird + peserta_baru
+                > limit_early_bird
+            ):
                 flash(
                     'Mohon maaf, kuota khusus Early Bird sudah penuh! '
                     'Harga tiket kembali normal. Silahkan mengisi form kembali. '
                     'Gunakan kode referal untuk mendapatkan potongan harga (opsional).',
                     'eb-penuh'
                 )
-                return redirect('/normal_daftar?status=eb_penuh')
 
-        kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
+                return redirect(
+                    '/normal_daftar?status=eb_penuh'
+                )
 
-        # Upload bukti transfer
-        bukti_url = upload_bukti_transfer(
-            request.files.get('bukti')
-        )
+        try:
+            bukti_url = upload_bukti_transfer(
+                request.files.get('bukti')
+            )
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return redirect('/daftar')
+        except Exception:
+            db.session.rollback()
+            flash(
+                'Bukti transfer gagal diupload. '
+                'Pastikan file maksimal 3 MB dan coba lagi.',
+                'danger'
+            )
+            return redirect('/daftar')
+
+        kode = "MMS-" + str(
+            uuid.uuid4()
+        ).upper()[:4]
 
         tiket_baru = Tiket(
             kode=kode,
@@ -316,7 +449,9 @@ def pendaftaran():
             kode=kode,
             angkatan=jenis_tiket,
             qr_base64=qr_base64,
-            waktu_daftar=format_wib(wib_now())
+            waktu_daftar=format_wib(
+                wib_now()
+            )
         )
 
     return render_template(
@@ -365,13 +500,27 @@ def pendaftaran_normal():
         if total_terdaftar >= kuota:
             return redirect('/habis')
 
-        nama = sanitize_input(request.form.get('nama'))
-        no_telp = sanitize_input(request.form.get('telp'))
-        email = sanitize_input(request.form.get('email'))
-        kode_referal = sanitize_input(request.form.get('ref'))
+        nama = sanitize_input(
+            request.form.get('nama')
+        )
+
+        no_telp = sanitize_input(
+            request.form.get('telp')
+        )
+
+        email = sanitize_input(
+            request.form.get('email')
+        )
+
+        kode_referal = sanitize_input(
+            request.form.get('ref')
+        )
 
         if not nama:
-            flash('Nama wajib diisi!', 'danger')
+            flash(
+                'Nama wajib diisi!',
+                'danger'
+            )
             return redirect('/normal_daftar')
 
         jenis_tiket = 'normal'
@@ -391,21 +540,38 @@ def pendaftaran_normal():
         if total_normal + peserta_baru > limit_normal:
             return redirect('/habis')
 
-        kode_ref_upper = (kode_referal or '').strip().upper()
+        kode_ref_upper = (
+            kode_referal or ''
+        ).strip().upper()
 
         if kode_ref_upper in KODE_REFERAL_VALID:
             harga_final = 388000
             kode_referal_final = kode_ref_upper
         else:
             harga_final = 389000
-            kode_referal_final = kode_referal or None
+            kode_referal_final = (
+                kode_referal or None
+            )
 
-        kode = "MMS-" + str(uuid.uuid4()).upper()[:4]
+        try:
+            bukti_url = upload_bukti_transfer(
+                request.files.get('bukti')
+            )
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return redirect('/normal_daftar')
+        except Exception:
+            db.session.rollback()
+            flash(
+                'Bukti transfer gagal diupload. '
+                'Pastikan file maksimal 3 MB dan coba lagi.',
+                'danger'
+            )
+            return redirect('/normal_daftar')
 
-        # Upload bukti transfer
-        bukti_url = upload_bukti_transfer(
-            request.files.get('bukti')
-        )
+        kode = "MMS-" + str(
+            uuid.uuid4()
+        ).upper()[:4]
 
         tiket_baru = Tiket(
             kode=kode,
@@ -429,21 +595,32 @@ def pendaftaran_normal():
             )
         )
 
-    return render_template('normal_daftar.html')
+    return render_template(
+        'normal_daftar.html'
+    )
 
 
 @app.route('/sukses')
 def sukses():
+
     kode = request.args.get('kode')
 
     if not kode:
-        flash('Data pendaftaran tidak ditemukan.', 'danger')
+        flash(
+            'Data pendaftaran tidak ditemukan.',
+            'danger'
+        )
         return redirect('/normal_daftar')
 
-    tiket = Tiket.query.filter_by(kode=kode).first()
+    tiket = Tiket.query.filter_by(
+        kode=kode
+    ).first()
 
     if not tiket:
-        flash('Data tiket tidak ditemukan.', 'danger')
+        flash(
+            'Data tiket tidak ditemukan.',
+            'danger'
+        )
         return redirect('/normal_daftar')
 
     qr_base64 = generate_qr_base64(kode)
@@ -454,58 +631,95 @@ def sukses():
         kode=tiket.kode,
         angkatan=tiket.jenis_tiket,
         qr_base64=qr_base64,
-        waktu_daftar=format_wib(tiket.waktu_daftar)
+        waktu_daftar=format_wib(
+            tiket.waktu_daftar
+        )
     )
 
 
 @app.route('/hapus_tiket/<int:tiket_id>', methods=['POST'])
 def hapus_tiket(tiket_id):
+
     tiket = Tiket.query.get(tiket_id)
 
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    is_ajax = (
+        request.headers.get(
+            'X-Requested-With'
+        ) == 'XMLHttpRequest'
+    )
 
     if not tiket:
+
         if is_ajax:
-            return jsonify({'success': False, 'message': 'Data tidak ditemukan'}), 404
-        flash('Data tidak ditemukan', 'danger')
+            return jsonify({
+                'success': False,
+                'message': 'Data tidak ditemukan'
+            }), 404
+
+        flash(
+            'Data tidak ditemukan',
+            'danger'
+        )
+
         return redirect('/admin')
 
     db.session.delete(tiket)
     db.session.commit()
 
     if is_ajax:
-        return jsonify({'success': True})
+        return jsonify({
+            'success': True
+        })
 
-    flash('Data berhasil dihapus', 'success')
+    flash(
+        'Data berhasil dihapus',
+        'success'
+    )
+
     return redirect('/admin')
 
 
 @app.route('/hapus_semua_peserta', methods=['POST'])
 def hapus_semua_peserta():
+
     Tiket.query.delete()
     db.session.commit()
-    flash('Semua data peserta berhasil dihapus', 'success')
+
+    flash(
+        'Semua data peserta berhasil dihapus',
+        'success'
+    )
+
     return redirect('/admin')
 
 
 @app.route('/reset_semua', methods=['POST'])
 def reset_semua():
+
     Tiket.query.update({
-        Tiket.is_used: False})
+        Tiket.is_used: False
+    })
+
     db.session.commit()
-    flash('Semua status kehadiran berhasil direset menjadi Belum Hadir.', 'success')
+
+    flash(
+        'Semua status kehadiran berhasil direset menjadi Belum Hadir.',
+        'success'
+    )
+
     return redirect('/admin')
 
 
 @app.route('/export/csv')
 def export_csv():
 
-    tiket = Tiket.query.order_by(Tiket.id.asc()).all()
+    tiket = Tiket.query.order_by(
+        Tiket.id.asc()
+    ).all()
 
     output = io.StringIO()
     writer = csv.writer(output)
 
-    # Header
     writer.writerow([
         'No',
         'Kode Tiket',
@@ -520,9 +734,10 @@ def export_csv():
         'Waktu Scan'
     ])
 
-    # Data
-    for no, t in enumerate(tiket, start=1):
-
+    for no, t in enumerate(
+        tiket,
+        start=1
+    ):
         writer.writerow([
             no,
             t.kode or '-',
@@ -533,8 +748,12 @@ def export_csv():
             t.jenis_tiket or '-',
             t.jumlah_peserta or 0,
             'Hadir' if t.is_used else 'Belum Hadir',
-            format_wib(t.waktu_daftar) if t.waktu_daftar else '-',
-            format_wib(t.waktu_scan) if t.waktu_scan else '-'
+            format_wib(
+                t.waktu_daftar
+            ) if t.waktu_daftar else '-',
+            format_wib(
+                t.waktu_scan
+            ) if t.waktu_scan else '-'
         ])
 
     output.seek(0)
@@ -551,8 +770,8 @@ def export_csv():
 
 @app.route('/hadirkan_manual', methods=['POST'])
 def hadirkan_manual():
-    data = request.get_json()
 
+    data = request.get_json()
     tiket_id = data.get('id')
 
     if not tiket_id:
@@ -561,7 +780,6 @@ def hadirkan_manual():
             'message': 'ID tiket tidak ditemukan.'
         }), 400
 
-    # Cari tiket
     tiket = Tiket.query.get(tiket_id)
 
     if not tiket:
@@ -570,7 +788,8 @@ def hadirkan_manual():
             'message': 'Tiket tidak ditemukan.'
         }), 404
 
-    tiket.status = 'hadir'
+    tiket.is_used = True
+    tiket.waktu_scan = wib_now()
 
     db.session.commit()
 
@@ -583,85 +802,172 @@ def hadirkan_manual():
 @app.route('/verify_bukti/<int:tiket_id>', methods=['POST'])
 @login_required
 def verify_bukti(tiket_id):
+
     try:
-        tiket = Tiket.query.get_or_404(tiket_id)
+        tiket = Tiket.query.get_or_404(
+            tiket_id
+        )
+
         data = request.get_json()
-        tiket.bukti_terverifikasi = data.get('verified', False)
+
+        tiket.bukti_terverifikasi = data.get(
+            'verified',
+            False
+        )
+
         db.session.commit()
-        return jsonify({"success": True})
+
+        return jsonify({
+            "success": True
+        })
+
     except Exception as e:
+
         db.session.rollback()
-        return jsonify({"success": False, "message": str(e)}), 500
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 
 @app.route('/admin/kuota', methods=['POST'])
 def admin_kuota():
+
     try:
-        kuota_baru = int(request.form.get('kuota', 0))
+        kuota_baru = int(
+            request.form.get(
+                'kuota',
+                0
+            )
+        )
 
         if kuota_baru < 1:
-            flash('Kuota minimal 1.', 'danger')
-            return redirect(url_for('admin'))
+            flash(
+                'Kuota minimal 1.',
+                'danger'
+            )
+            return redirect(
+                url_for('admin')
+            )
 
         set_kuota(kuota_baru)
 
-        flash(f'Kuota berhasil diubah menjadi {kuota_baru}.', 'success')
+        flash(
+            f'Kuota berhasil diubah menjadi {kuota_baru}.',
+            'success'
+        )
 
     except (ValueError, TypeError):
-        flash('Nilai kuota tidak valid.', 'danger')
 
-    return redirect(url_for('admin.html'))
+        flash(
+            'Nilai kuota tidak valid.',
+            'danger'
+        )
+
+    return redirect(
+        url_for('admin')
+    )
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     if current_user.is_authenticated:
-        return redirect(url_for('admin'))
+        return redirect(
+            url_for('admin')
+        )
+
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
+
+        username = request.form.get(
+            'username'
+        )
+
+        password = request.form.get(
+            'password'
+        )
+
+        user = User.query.filter_by(
+            username=username
+        ).first()
+
+        if user and user.check_password(
+            password
+        ):
             login_user(user)
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('admin'))
-        flash('Username atau password salah!', 'danger')
-    return render_template('login.html')
+
+            next_page = request.args.get(
+                'next'
+            )
+
+            return redirect(
+                next_page or url_for('admin')
+            )
+
+        flash(
+            'Username atau password salah!',
+            'danger'
+        )
+
+    return render_template(
+        'login.html'
+    )
 
 
 @app.route('/logout')
 @login_required
 def logout():
+
     logout_user()
-    flash('Berhasil logout.', 'info')
-    return redirect(url_for('login'))
+
+    flash(
+        'Berhasil logout.',
+        'info'
+    )
+
+    return redirect(
+        url_for('login')
+    )
 
 
 @app.route('/admin')
 @login_required
 def admin():
+
     try:
         tiket = Tiket.query.all()
+
         total = len(tiket)
-        terpakai = sum(1 for t in tiket if t.is_used)
+
+        terpakai = sum(
+            1 for t in tiket
+            if t.is_used
+        )
+
         sisa = total - terpakai
+
         kuota = get_kuota()
 
-        return render_template('admin.html',
-                               tiket=tiket,
-                               total=total,
-                               terpakai=terpakai,
-                               sisa=sisa,
-                               kuota=kuota
-                               )
-    except Exception as e:
-        # SEMENTARA buat debug, hapus lagi kalau udah ketemu akar masalahnya
-        import traceback
-        return f"<pre>{traceback.format_exc()}</pre>", 500
+        return render_template(
+            'admin.html',
+            tiket=tiket,
+            total=total,
+            terpakai=terpakai,
+            sisa=sisa,
+            kuota=kuota
+        )
+
+    except Exception:
+        return (
+            'Terjadi kesalahan saat membuka dashboard admin.',
+            500
+        )
 
 
 @app.route('/habis')
 def habis():
+
     kuota = get_kuota()
 
     total_terdaftar = db.session.query(
@@ -677,23 +983,50 @@ def habis():
 
 @app.route('/scan')
 def scan():
-    return render_template('scan.html', status=None)
+
+    return render_template(
+        'scan.html',
+        status=None
+    )
 
 
 @app.route('/scan/<kode_tiket>')
 def scan_kode(kode_tiket):
-    tiket = Tiket.query.filter_by(kode=kode_tiket).first()
+
+    tiket = Tiket.query.filter_by(
+        kode=kode_tiket
+    ).first()
+
     if not tiket:
-        return render_template('scan.html', status='tidak ditemukan', kode=kode_tiket)
+
+        return render_template(
+            'scan.html',
+            status='tidak ditemukan',
+            kode=kode_tiket
+        )
+
     if tiket.is_used:
-        return render_template('scan.html', status='telah terpakai', kode=kode_tiket,
-                               nama_peserta=tiket.nama, angkatan_peserta=tiket.jenis_tiket)
-    else:
-        tiket.is_used = True
-        tiket.waktu_scan = wib_now()
-        db.session.commit()
-        return render_template('scan.html', status='berhasil', kode=kode_tiket,
-                               nama_peserta=tiket.nama, angkatan_peserta=tiket.jenis_tiket)
+
+        return render_template(
+            'scan.html',
+            status='telah terpakai',
+            kode=kode_tiket,
+            nama_peserta=tiket.nama,
+            angkatan_peserta=tiket.jenis_tiket
+        )
+
+    tiket.is_used = True
+    tiket.waktu_scan = wib_now()
+
+    db.session.commit()
+
+    return render_template(
+        'scan.html',
+        status='berhasil',
+        kode=kode_tiket,
+        nama_peserta=tiket.nama,
+        angkatan_peserta=tiket.jenis_tiket
+    )
 
 
 if __name__ == '__main__':
