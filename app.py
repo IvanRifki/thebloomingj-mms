@@ -101,7 +101,6 @@ def upload_bukti_transfer(file):
         return None
 
     max_size = 3 * 1024 * 1024
-
     file_bytes = file.read()
 
     if len(file_bytes) > max_size:
@@ -124,11 +123,12 @@ def upload_bukti_transfer(file):
         )
 
     filename = f"{uuid.uuid4().hex}.{ext}"
+    content_type = (
+        file.content_type
+        or 'application/octet-stream'
+    )
 
-    content_type = file.content_type or 'application/octet-stream'
-
-    storage = supabase.storage()
-    bucket = storage.from_('bukti-transfer')
+    bucket = supabase.storage.from_('bukti-transfer')
 
     bucket.upload(
         filename,
