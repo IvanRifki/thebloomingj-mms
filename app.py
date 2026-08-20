@@ -188,7 +188,7 @@ def pendaftaran():
             total_early_bird = sum(t.jumlah_peserta for t in tiket_eb)
 
             if total_early_bird + peserta_baru > limit_early_bird:
-                flash('Mohon maaf, kuota khusus Early Bird sudah penuh! Harga tiket kembali normal. Gunakan kode referal untuk mendapatkan potongan harga (opsional). Silahkan mengisi kembali.', 'eb-penuh')
+                flash('Mohon maaf, kuota khusus Early Bird sudah penuh! Harga tiket kembali normal. Silahkan mengisi form kembali. Gunakan kode referal untuk mendapatkan potongan harga (opsional).', 'eb-penuh')
                 return redirect('/normal_daftar?status=eb_penuh')
 
         if jenis_tiket == 'normal':
