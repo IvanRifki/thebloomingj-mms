@@ -98,17 +98,35 @@ def upload_bukti_transfer(file):
     """Upload bukti transfer ke Supabase Storage."""
 
     if not file or not file.filename:
-        return None
+        raise ValueError(
+            'Bukti transfer wajib diupload.'
+        )
 
     max_size = 3 * 1024 * 1024
+
     file_bytes = file.read()
+
+    if not file_bytes:
+        raise ValueError(
+            'File bukti transfer kosong.'
+        )
 
     if len(file_bytes) > max_size:
         raise ValueError(
             'Ukuran bukti transfer maksimal 3 MB.'
         )
 
-    ext = file.filename.rsplit('.', 1)[-1].lower()
+    filename_asli = file.filename
+
+    if '.' not in filename_asli:
+        raise ValueError(
+            'File bukti transfer tidak memiliki ekstensi.'
+        )
+
+    ext = filename_asli.rsplit(
+        '.',
+        1
+    )[-1].lower()
 
     allowed_extensions = {
         'jpg',
@@ -124,24 +142,53 @@ def upload_bukti_transfer(file):
 
     filename = f"{uuid.uuid4().hex}.{ext}"
 
-    content_type = (
-        file.content_type
-        or 'application/octet-stream'
-    )
+    content_type_map = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'pdf': 'application/pdf'
+    }
 
-    bucket = supabase.storage.from_('bukti-transfer')
+    content_type = content_type_map[ext]
 
-    bucket.upload(
-        filename,
-        file_bytes,
-        file_options={
-            'content-type': content_type,
-            'cache-control': '3600',
-            'upsert': False
-        }
-    )
+    try:
+        storage = create_client(
+            supabase_url,
+            supabase_key
+        )
 
-    return bucket.get_public_url(filename)
+        bucket = storage.storage.from_(
+            'bukti-transfer'
+        )
+
+        bucket.upload(
+            filename,
+            file_bytes,
+            file_options={
+                'content-type': content_type,
+                'cache-control': '3600',
+                'upsert': False
+            }
+        )
+
+        public_url = bucket.get_public_url(
+            filename
+        )
+
+        print(
+            'UPLOAD BUKTI BERHASIL:',
+            public_url
+        )
+
+        return public_url
+
+    except Exception as e:
+        print(
+            'SUPABASE STORAGE ERROR:',
+            repr(e)
+        )
+
+        raise
 
 
 def sanitize_input(text, max_length=100):
