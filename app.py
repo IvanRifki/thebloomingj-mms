@@ -478,35 +478,20 @@ def export_csv():
 @app.route('/admin/kuota', methods=['POST'])
 def admin_kuota():
     try:
-        kuota_baru = int(request.form.get('kuota', 1))
+        kuota_baru = int(request.form.get('kuota', 0))
 
         if kuota_baru < 1:
-            flash('Kuota minimal 1 peserta.', 'danger')
-            return redirect('/admin')
-
-        total_terdaftar = db.session.query(
-            db.func.sum(Tiket.jumlah_peserta)
-        ).scalar() or 0
-
-        # Jangan boleh mengatur kuota di bawah jumlah peserta yang sudah terdaftar
-        if kuota_baru < total_terdaftar:
-            flash(
-                f'Kuota tidak bisa lebih kecil dari jumlah peserta yang sudah terdaftar ({total_terdaftar}).',
-                'danger'
-            )
-            return redirect('/admin')
+            flash('Kuota minimal 1.', 'danger')
+            return redirect(url_for('admin'))
 
         set_kuota(kuota_baru)
 
-        flash(
-            f'Kuota pendaftaran berhasil diubah menjadi {kuota_baru} peserta.',
-            'success'
-        )
+        flash(f'Kuota berhasil diubah menjadi {kuota_baru}.', 'success')
 
     except (ValueError, TypeError):
         flash('Nilai kuota tidak valid.', 'danger')
 
-    return redirect('/admin')
+    return redirect(url_for('admin.html'))
 
 
 @app.route('/login', methods=['GET', 'POST'])

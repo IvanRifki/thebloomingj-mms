@@ -987,7 +987,6 @@
        ===================================================== */
 
     function changeKuota(delta) {
-
         const input = document.getElementById('kuotaInput');
 
         if (!input) return;
@@ -999,12 +998,10 @@
         }
 
         value += delta;
-
         value = Math.max(1, value);
 
         input.value = value;
     }
-
 
     /* =====================================================
        MODAL RESET SEMUA
