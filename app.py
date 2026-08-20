@@ -123,6 +123,7 @@ def upload_bukti_transfer(file):
         )
 
     filename = f"{uuid.uuid4().hex}.{ext}"
+
     content_type = (
         file.content_type
         or 'application/octet-stream'
@@ -133,9 +134,10 @@ def upload_bukti_transfer(file):
     bucket.upload(
         filename,
         file_bytes,
-        {
+        file_options={
             'content-type': content_type,
-            'upsert': False
+            'cache-control': '3600',
+            'upsert': 'false'
         }
     )
 
