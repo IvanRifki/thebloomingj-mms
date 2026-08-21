@@ -26,9 +26,17 @@
             <span class="logo-the">The</span>
             <span class="logo-bloom">Blooming Journey</span>
         </div>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/daftar">Daftar lagi</a></li>
+
+        <button class="nav-toggle" id="navToggle" type="button" aria-label="Buka menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#home" class="active">Home</a></li>
+            <li><a href="#join">How To Join</a></li>
+            <li><a href="#mms">About MMS</a></li>
+            <li><a href="#tambahan">tambahan</a></li>
+            <li><a href="#contact">Contact Us</a></li>
         </ul>
     </nav>
 
@@ -49,7 +57,39 @@
     <main>
         {% block content %}{% endblock %}
     </main>
+
     {% block scripts %}{% endblock %}
+
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        if (navToggle && navLinks) {
+            navToggle.addEventListener('click', function () {
+                navLinks.classList.toggle('active');
+
+                const icon = navToggle.querySelector('i');
+
+                if (navLinks.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-xmark');
+                } else {
+                    icon.classList.remove('fa-xmark');
+                    icon.classList.add('fa-bars');
+                }
+            });
+
+            navLinks.querySelectorAll('a').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    navLinks.classList.remove('active');
+
+                    const icon = navToggle.querySelector('i');
+                    icon.classList.remove('fa-xmark');
+                    icon.classList.add('fa-bars');
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>

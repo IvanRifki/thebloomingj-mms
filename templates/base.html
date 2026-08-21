@@ -26,6 +26,11 @@
             <span class="logo-the">The</span>
             <span class="logo-bloom">Blooming Journey</span>
         </div>
+
+        <button class="nav-toggle" id="navToggle" type="button" aria-label="Buka menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <ul class="nav-links">
             <li><a href="#home" class="active">Home</a></li>
             <li><a href="#join">How To Join</a></li>
@@ -52,7 +57,15 @@
     <main>
         {% block content %}{% endblock %}
     </main>
-    {% block scripts %}{% endblock %}
+    {% block scripts %}
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        navToggle.addEventListener('click', function () {
+            navLinks.classList.toggle('active');
+        });
+    </script>{% endblock %}
 </body>
 
 </html>

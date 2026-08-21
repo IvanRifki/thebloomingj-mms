@@ -92,6 +92,7 @@ nav.scrolled {
     color: var(--soft);
     cursor: pointer;
     order: 3;
+    padding: 0.5rem;
 }
 
 .nav-links {
@@ -707,6 +708,10 @@ footer span {
     }
 
     .nav-links.open {
+        display: flex;
+    }
+
+    .nav-links.active {
         display: flex;
     }
 
