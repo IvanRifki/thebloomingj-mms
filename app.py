@@ -19,7 +19,8 @@ from flask import (
     jsonify,
     send_file,
     flash,
-    send_from_directory
+    send_from_directory,
+    make_response
 )
 from flask_login import (
     LoginManager,
@@ -343,6 +344,32 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/api/sisa_eb')
+def api_sisa_eb():
+    limit_early_bird = get_limit_early_bird()
+
+    tiket_eb = Tiket.query.filter(
+        Tiket.jenis_tiket.in_([
+            'single_eb',
+            'circle_eb',
+            'squad_eb'
+        ])
+    ).all()
+
+    total_early_bird = sum(
+        t.jumlah_peserta for t in tiket_eb
+    )
+
+    sisa_eb = max(0, limit_early_bird - total_early_bird)
+
+    resp = jsonify({
+        'sisa_eb': sisa_eb,
+        'eb_penuh': total_early_bird >= limit_early_bird
+    })
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp
+
+
 @app.route('/daftar', methods=['GET', 'POST'])
 def pendaftaran():
 
@@ -540,11 +567,13 @@ def pendaftaran():
         limit_early_bird - total_early_bird
     )
 
-    return render_template(
+    resp = make_response(render_template(
         'daftar.html',
         tiket_terjual=total_early_bird,
         sisa_eb=sisa_eb
-    )
+    ))
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp
 
 
 @app.route('/normal_daftar', methods=['GET', 'POST'])

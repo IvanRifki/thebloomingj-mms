@@ -138,28 +138,76 @@
     </section>
 
     <script>
-        const sisaEb = parseInt(document.getElementById('daftar').dataset.sisaEb, 10);
+        let sisaEb = parseInt(document.getElementById('daftar').dataset.sisaEb, 10);
 
-        document.querySelectorAll('.paket-card').forEach(function (card) {
-            const jumlah = parseInt(card.dataset.jumlah, 10);
-            const radio = card.querySelector('input[type="radio"]');
+        function updatePaketAvailability() {
+            document.querySelectorAll('.paket-card').forEach(function (card) {
+                const jumlah = parseInt(card.dataset.jumlah, 10);
+                const radio = card.querySelector('input[type="radio"]');
 
-            if (jumlah > sisaEb) {
-                card.classList.add('paket-disabled');
-                radio.disabled = true;
+                if (jumlah > sisaEb) {
+                    card.classList.add('paket-disabled');
+                    radio.disabled = true;
 
-                if (radio.checked) {
-                    radio.checked = false;
-                    card.classList.remove('active');
+                    if (radio.checked) {
+                        radio.checked = false;
+                        card.classList.remove('active');
 
-                    const firstAvailable = document.querySelector(
-                        '.paket-card:not(.paket-disabled) input[type="radio"]'
-                    );
-                    if (firstAvailable) {
-                        firstAvailable.checked = true;
-                        firstAvailable.closest('.paket-card').classList.add('active');
+                        const firstAvailable = document.querySelector(
+                            '.paket-card:not(.paket-disabled) input[type="radio"]'
+                        );
+                        if (firstAvailable) {
+                            firstAvailable.checked = true;
+                            firstAvailable.closest('.paket-card').classList.add('active');
+
+                            // sync harga box kalau ada perubahan pilihan otomatis
+                            firstAvailable.dispatchEvent(new Event('change'));
+                        }
                     }
+                } else {
+                    // re-enable kalau ternyata sisaEb naik lagi (misal ada yg cancel/dihapus admin)
+                    card.classList.remove('paket-disabled');
+                    radio.disabled = false;
                 }
+            });
+        }
+
+        async function refreshSisaEb() {
+            try {
+                const res = await fetch('/api/sisa_eb', { cache: 'no-store' });
+                if (!res.ok) return;
+
+                const data = await res.json();
+                sisaEb = data.sisa_eb;
+
+                updatePaketAvailability();
+
+                if (data.eb_penuh) {
+                    // opsional: kalau EB abis pas user lagi ngisi form,
+                    // arahkan ke halaman normal
+                    window.location.href = '/normal_daftar?status=eb_penuh';
+                }
+            } catch (err) {
+                console.error('Gagal cek sisa EB:', err);
+            }
+        }
+
+        // jalanin pertama kali
+        updatePaketAvailability();
+
+        // polling tiap 10 detik selagi halaman terbuka
+        setInterval(refreshSisaEb, 10000);
+
+        // refresh pas user balik ke tab ini (termasuk dari bfcache/back button)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                refreshSisaEb();
+            }
+        });
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                refreshSisaEb();
             }
         });
     </script>
