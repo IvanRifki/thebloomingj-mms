@@ -291,7 +291,7 @@ def get_kuota():
         key='kuota'
     ).first()
 
-    return int(setting.value) if setting else 320
+    return int(setting.value) if setting else 120
 
 
 def set_kuota(kuota_baru):
@@ -316,7 +316,24 @@ def get_limit_early_bird():
         key='limit_early_bird'
     ).first()
 
-    return int(setting.value) if setting else 100
+    return int(setting.value) if setting else 40
+
+
+def set_limit_early_bird(limit_baru):
+    setting = Setting.query.filter_by(
+        key='limit_early_bird'
+    ).first()
+
+    if setting:
+        setting.value = str(limit_baru)
+    else:
+        setting = Setting(
+            key='limit_early_bird',
+            value=str(limit_baru)
+        )
+        db.session.add(setting)
+
+    db.session.commit()
 
 
 def get_limit_normal():
@@ -1060,28 +1077,55 @@ def verify_bukti(tiket_id):
 def admin_kuota():
 
     try:
-        kuota_baru = int(
-            request.form.get(
-                'kuota',
-                0
-            )
-        )
+        jenis = request.form.get('jenis')
 
-        if kuota_baru < 1:
+        if jenis == 'early_bird':
+            limit_baru = int(
+                request.form.get(
+                    'limit_early_bird',
+                    0
+                )
+            )
+
+            if limit_baru < 1:
+                flash(
+                    'Kuota Early Bird minimal 1.',
+                    'danger'
+                )
+                return redirect(
+                    url_for('admin')
+                )
+
+            set_limit_early_bird(limit_baru)
+
             flash(
-                'Kuota minimal 1.',
-                'danger'
-            )
-            return redirect(
-                url_for('admin')
+                f'Kuota Early Bird berhasil diubah menjadi {limit_baru}.',
+                'success'
             )
 
-        set_kuota(kuota_baru)
+        else:
+            kuota_baru = int(
+                request.form.get(
+                    'kuota',
+                    0
+                )
+            )
 
-        flash(
-            f'Kuota berhasil diubah menjadi {kuota_baru}.',
-            'success'
-        )
+            if kuota_baru < 1:
+                flash(
+                    'Kuota minimal 1.',
+                    'danger'
+                )
+                return redirect(
+                    url_for('admin')
+                )
+
+            set_kuota(kuota_baru)
+
+            flash(
+                f'Kuota berhasil diubah menjadi {kuota_baru}.',
+                'success'
+            )
 
     except (ValueError, TypeError):
 
@@ -1173,6 +1217,7 @@ def admin():
         sisa = total - terpakai
 
         kuota = get_kuota()
+        limit_early_bird = get_limit_early_bird()
 
         return render_template(
             'admin.html',
@@ -1180,7 +1225,8 @@ def admin():
             total=total,
             terpakai=terpakai,
             sisa=sisa,
-            kuota=kuota
+            kuota=kuota,
+            limit_early_bird=limit_early_bird
         )
 
     except Exception:

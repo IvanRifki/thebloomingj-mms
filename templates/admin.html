@@ -424,6 +424,79 @@
 
     </div>
 
+    <div class="mms-chart-card animate-fade-in-up" style="margin-bottom: 2rem;">
+
+        <h4 style="margin-bottom: 1rem;">
+            <i class="fas fa-graduation-cap" style="color: var(--accent-gold);"></i>
+
+            Pengaturan Kuota Early Bird
+        </h4>
+
+
+        <form method="POST" action="/admin/kuota" style="
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        ">
+
+            <input type="hidden" name="jenis" value="early_bird">
+
+            <div style="
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+
+                <button type="button" class="mms-btn mms-btn-outline mms-btn-sm" onclick="changeEarlyBird(-10)"
+                    style="padding: 0.4rem 0.75rem; min-width: 40px;">
+                    -10
+                </button>
+
+                <button type="button" class="mms-btn mms-btn-outline mms-btn-sm" onclick="changeEarlyBird(-1)"
+                    style="padding: 0.4rem 0.75rem; min-width: 40px;">
+                    -1
+                </button>
+
+                <input type="number" name="limit_early_bird" id="earlyBirdInput" value="{{ limit_early_bird }}" min="1"
+                    class="mms-input" style="
+                    width: 90px;
+                    text-align: center;
+                    font-weight: 700;
+                    font-size: 1.1rem;
+                    padding: 0.5rem;
+                ">
+
+                <button type="button" class="mms-btn mms-btn-outline mms-btn-sm" onclick="changeEarlyBird(1)"
+                    style="padding: 0.4rem 0.75rem; min-width: 40px;">
+                    +1
+                </button>
+
+                <button type="button" class="mms-btn mms-btn-outline mms-btn-sm" onclick="changeEarlyBird(10)"
+                    style="padding: 0.4rem 0.75rem; min-width: 40px;">
+                    +10
+                </button>
+
+            </div>
+
+
+            <button type="submit" class="mms-btn mms-btn-primary mms-btn-sm">
+                <i class="fas fa-save"></i>
+                Simpan
+            </button>
+
+
+            <span style="
+                font-size: 0.82rem;
+                color: var(--text-muted);
+            ">
+                Kuota Early Bird saat ini:
+                <strong>{{ limit_early_bird }}</strong>
+            </span>
+
+        </form>
+
+    </div>
 
     <!-- ==========================================
          DATA PESERTA EARLY BIRD
