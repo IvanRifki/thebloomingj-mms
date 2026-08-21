@@ -27,7 +27,7 @@
         </div>
     </nav>
 
-    <section id="daftar">
+    <section id="daftar" data-sisa-eb="{{ sisa_eb }}">
         <div class="form-container">
             <h2>Form Pendaftaran | Early Bird</h2>
             <p class="form-subtitle">Isi data di bawah ini untuk mendaftar</p>
@@ -66,7 +66,7 @@
                 <div class="form-group">
                     <label>Pilih Paket Tiket EARLY BIRD <span style="color: red;">*</span></label>
                     <div class="paket-container">
-                        <label class="paket-card active">
+                        <label class="paket-card active" data-jumlah="1">
                             <div class="paket-info">
                                 <span class="paket-title">Single</span>
                                 <span class="paket-desc">1 Orang — Rp 329.000</span>
@@ -75,7 +75,7 @@
                                 data-harga-lama="389000" checked required>
                         </label>
 
-                        <label class="paket-card">
+                        <label class="paket-card" data-jumlah="3">
                             <div class="paket-info">
                                 <span class="paket-title">Circle</span>
                                 <span class="paket-desc">3 Orang — Rp 319.000/Orang</span>
@@ -84,7 +84,7 @@
                                 data-harga-lama="1167000" required>
                         </label>
 
-                        <label class="paket-card">
+                        <label class="paket-card" data-jumlah="5">
                             <div class="paket-info">
                                 <span class="paket-title">Squad</span>
                                 <span class="paket-desc">5 Orang — Rp 299.000/Orang</span>
@@ -136,6 +136,33 @@
             </div>
         </div>
     </section>
+
+    <script>
+        const sisaEb = parseInt(document.getElementById('daftar').dataset.sisaEb, 10);
+
+        document.querySelectorAll('.paket-card').forEach(function (card) {
+            const jumlah = parseInt(card.dataset.jumlah, 10);
+            const radio = card.querySelector('input[type="radio"]');
+
+            if (jumlah > sisaEb) {
+                card.classList.add('paket-disabled');
+                radio.disabled = true;
+
+                if (radio.checked) {
+                    radio.checked = false;
+                    card.classList.remove('active');
+
+                    const firstAvailable = document.querySelector(
+                        '.paket-card:not(.paket-disabled) input[type="radio"]'
+                    );
+                    if (firstAvailable) {
+                        firstAvailable.checked = true;
+                        firstAvailable.closest('.paket-card').classList.add('active');
+                    }
+                }
+            }
+        });
+    </script>
 
     <script>
 
@@ -224,9 +251,6 @@
             }
         });
     </script>
-</body>
-
-</html>
 </body>
 
 </html>

@@ -1,41 +1,256 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="id">
 
-{% block title %}Kuota Habis — MMS Kajian{% endblock %}
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}The Blooming Journey MMS{% endblock %}</title>
+    <meta name="description" content="Sistem Tiket Digital Kajian Offline MMS 2026">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='mms.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='mms.png') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
 
-{% block content %}
-<div class="fullpage-center">
-    <div style="max-width: 400px; width: 100%;">
-        <div style="margin-bottom: 0.75rem;" class="animate-scale-in">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"
-                style="width: 130px; height: 130px; object-fit: contain;">
+<body>
+
+    <div class="scroll-progress" id="scrollBar"></div>
+
+    <nav id="navbar">
+        <div class="nav-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="logo"
+                style="height: 36px; vertical-align: middle; margin-right: 8px;">
+            <span class="logo-the">The</span>
+            <span class="logo-bloom">Blooming Journey</span>
         </div>
+    </nav>
 
-        <span class="mms-badge mms-badge-warning"
-            style="font-size: 0.82rem; margin-bottom: 1rem; display: inline-flex;">
-            <i class="fas fa-ticket"></i> Kuota Terpenuhi
-        </span>
+    <section id="daftar" data-sisa-eb="{{ sisa_eb }}">
+        <div class="form-container">
+            <h2>Form Pendaftaran | Early Bird</h2>
+            <p class="form-subtitle">Isi data di bawah ini untuk mendaftar</p>
 
-        <h2 style="font-size: 1.4rem; margin: 0.75rem 0 0.5rem;">Afwan, Akhawat</h2>
 
-        <p style="color: var(--black); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem;">
-            Terima kasih atas antusiasme antunna! Sayangnya, kuota pendaftaran sudah
-            <strong style="color: var(--soft);">
-                terpenuhi ({{ total }}/{{ kuota }})
-            </strong>
-        </p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} {% if category == 'eb-penuh' %}alert-eb-penuh{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
 
-        <div
-            style="background: var(--lavender); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
-            <p style="font-size: 0.85rem; margin: 0;">
-                <i class="fas fa-bell" style="color: var(--black);"></i>
-                Nantikan informasi seminar berikutnya di instagram @event.mms ya!
-            </p>
+            <form id="registerForm" method="POST" action="/daftar" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap<span style="color: red;">*</span></label>
+                    <input type="text" id="nama" name="nama" placeholder="Nama Lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label for="telp">No. Telepon<span style="color: red;">*</span></label>
+                    <input type="tel" id="telp" name="telp" placeholder="Contoh: 08123456789" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email<span style="color: red;">*</span></label>
+                    <input type="email" id="email" name="email" placeholder="mms@email.com" required>
+                </div>
+
+                <!-- tiket info-->
+                <div class="form-group">
+                    <button type="button" class="btn-info-tiket" id="btnInfoTiket">ℹ Informasi Tiket</button>
+                </div>
+
+                <!-- PILIHAN PAKET TIKET -->
+                <div class="form-group">
+                    <label>Pilih Paket Tiket EARLY BIRD <span style="color: red;">*</span></label>
+                    <div class="paket-container">
+                        <label class="paket-card active" data-jumlah="1">
+                            <div class="paket-info">
+                                <span class="paket-title">Single</span>
+                                <span class="paket-desc">1 Orang — Rp 329.000</span>
+                            </div>
+                            <input type="radio" name="paket_tiket" value="single_eb" data-harga="329000"
+                                data-harga-lama="389000" checked required>
+                        </label>
+
+                        <label class="paket-card" data-jumlah="3">
+                            <div class="paket-info">
+                                <span class="paket-title">Circle</span>
+                                <span class="paket-desc">3 Orang — Rp 319.000/Orang</span>
+                            </div>
+                            <input type="radio" name="paket_tiket" value="circle_eb" data-harga="957000"
+                                data-harga-lama="1167000" required>
+                        </label>
+
+                        <label class="paket-card" data-jumlah="5">
+                            <div class="paket-info">
+                                <span class="paket-title">Squad</span>
+                                <span class="paket-desc">5 Orang — Rp 299.000/Orang</span>
+                            </div>
+                            <input type="radio" name="paket_tiket" value="squad_eb" data-harga="1495000"
+                                data-harga-lama="1945000" required>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- BOX TOTAL HARGA-->
+                <div class="total-harga-box">
+                    <div class="total-harga-label">Total Harga</div>
+                    <div class="total-harga-rekening">A.n Annisa Nafiya 7132562126 (BSI)</div>
+
+                    <div class="total-harga-wrapper">
+                        <del class="total-harga-coret" id="displayHargaLama">Rp 389.000</del>
+                        <span class="total-harga-value" id="displayTotalHarga">Rp 329.000</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bukti">Upload Bukti Transfer<span style="color: red;">*</span></label>
+                    <input type="file" id="bukti" name="bukti" accept="image/*,.pdf" required>
+                    <span class="file-hint">Format: JPG, PNG, atau PDF (max 3MB)</span>
+                </div>
+
+                <button type="submit" class="btn-submit">Daftar Sekarang</button>
+            </form>
+
+            <!-- info tiket -->
+            <div class="modal-overlay" id="modalTiket">
+                <div class="modal-card">
+                    <button class="modal-close" id="modalClose">&times;</button>
+                    <h3>Informasi Harga Tiket</h3>
+                    <h4>Early Bird</h4>
+                    <h4>17 Agustus - 30 Agustus</h4>
+                    <ul class="ticket-list">
+                        <li><span>Single</span><strong>Rp 329.000/Orang</strong></li>
+                        <li><span>Circle (3 Orang)</span><strong>Rp 319.000/Orang</strong></li>
+                        <li><span>Squad (5 Orang)</span><strong>Rp 299.000/Orang</strong></li>
+                    </ul>
+                    <h4>Normal</h4>
+                    <h4>31 Agustus - 15 September</h4>
+                    <ul class="ticket-list">
+                        <li><span>Single</span><strong>Rp 389.000/Orang</strong></li>
+                    </ul>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <a href="/" class="mms-btn mms-btn-primary" style="width: 100%; justify-content: center;">
-            <i class="fas fa-home"></i> Kembali ke Beranda
-        </a>
-    </div>
-</div>
-</div>
-{% endblock %}
+    <script>
+        const sisaEb = parseInt(document.getElementById('daftar').dataset.sisaEb, 10);
+
+        document.querySelectorAll('.paket-card').forEach(function (card) {
+            const jumlah = parseInt(card.dataset.jumlah, 10);
+            const radio = card.querySelector('input[type="radio"]');
+
+            if (jumlah > sisaEb) {
+                card.classList.add('paket-disabled');
+                radio.disabled = true;
+
+                if (radio.checked) {
+                    radio.checked = false;
+                    card.classList.remove('active');
+
+                    const firstAvailable = document.querySelector(
+                        '.paket-card:not(.paket-disabled) input[type="radio"]'
+                    );
+                    if (firstAvailable) {
+                        firstAvailable.checked = true;
+                        firstAvailable.closest('.paket-card').classList.add('active');
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script>
+
+        const radioPaket = document.querySelectorAll('input[name="paket_tiket"]');
+        const displayTotal = document.getElementById('displayTotalHarga');
+        const displayHargaLama = document.getElementById('displayHargaLama');
+        const paketCards = document.querySelectorAll('.paket-card');
+
+        function formatRupiah(angka) {
+            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        radioPaket.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+
+                paketCards.forEach(card => card.classList.remove('active'));
+                e.target.closest('.paket-card').classList.add('active');
+
+
+                const hargaBaru = parseInt(e.target.getAttribute('data-harga'));
+                const hargaLama = parseInt(e.target.getAttribute('data-harga-lama'));
+
+                displayTotal.innerText = formatRupiah(hargaBaru);
+
+                if (displayHargaLama) {
+                    displayHargaLama.innerText = formatRupiah(hargaLama);
+                }
+            });
+        });
+
+        // --- autosave buat org org---
+        const form = document.getElementById('registerForm');
+        const fields = ['nama', 'telp', 'email'];
+
+        fields.forEach(id => {
+            const input = document.getElementById(id);
+            if (!input) return;
+
+            const saved = localStorage.getItem('form_' + id);
+            if (saved) input.value = saved;
+
+            input.addEventListener('input', () => {
+                localStorage.setItem('form_' + id, input.value);
+            });
+        });
+
+        if (form) {
+            form.addEventListener('submit', () => {
+                fields.forEach(id => localStorage.removeItem('form_' + id));
+            });
+        }
+
+        // --- INFO TIKET ---
+        const btnInfoTiket = document.getElementById('btnInfoTiket');
+        const modalTiket = document.getElementById('modalTiket');
+        const modalClose = document.getElementById('modalClose');
+
+        if (btnInfoTiket && modalTiket && modalClose) {
+            btnInfoTiket.addEventListener('click', () => {
+                modalTiket.classList.add('active');
+            });
+
+            modalClose.addEventListener('click', () => {
+                modalTiket.classList.remove('active');
+            });
+
+            modalTiket.addEventListener('click', (e) => {
+                if (e.target === modalTiket) {
+                    modalTiket.classList.remove('active');
+                }
+            });
+        }
+    </script>
+    <script>
+        const buktiInput = document.getElementById('bukti');
+        const MAX_SIZE = 3 * 1024 * 1024; // 3 MB
+
+        buktiInput.addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (!file) return;
+
+            if (file.size > MAX_SIZE) {
+                alert('Ukuran bukti transfer maksimal 3 MB.');
+                this.value = '';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -529,9 +529,15 @@ def pendaftaran():
             )
         )
 
+    sisa_eb = max(
+        0,
+        limit_early_bird - total_early_bird
+    )
+
     return render_template(
         'daftar.html',
-        tiket_terjual=total_early_bird
+        tiket_terjual=total_early_bird,
+        sisa_eb=sisa_eb
     )
 
 
@@ -702,8 +708,14 @@ def pendaftaran_normal():
             )
         )
 
+    sisa_normal = max(
+        0,
+        limit_normal - total_normal
+    )
+
     return render_template(
-        'normal_daftar.html'
+        'normal_daftar.html',
+        sisa_normal=sisa_normal
     )
 
 
