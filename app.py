@@ -33,6 +33,12 @@ from flask_sqlalchemy import SQLAlchemy
 from supabase import create_client, Client
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
 load_dotenv()
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -829,35 +835,38 @@ def reset_semua():
     return redirect('/admin')
 
 
-@app.route('/export/csv')
-def export_csv():
+@app.route('/export/excel')
+def export_excel():
 
     tiket = Tiket.query.order_by(
         Tiket.id.asc()
     ).all()
 
-    output = io.StringIO()
-    writer = csv.writer(output)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Data Peserta'
 
-    writer.writerow([
-        'No',
-        'Kode Tiket',
-        'Nama Lengkap',
-        'No Telp',
-        'Email',
-        'Kode Referal',
-        'Jenis Tiket',
-        'Jumlah Peserta',
-        'Status',
-        'Waktu Daftar',
-        'Waktu Scan'
-    ])
+    headers = [
+        'No', 'Kode Tiket', 'Nama Lengkap', 'No Telp', 'Email',
+        'Kode Referal', 'Jenis Tiket', 'Jumlah Peserta',
+        'Status', 'Waktu Daftar', 'Waktu Scan'
+    ]
 
-    for no, t in enumerate(
-        tiket,
-        start=1
-    ):
-        writer.writerow([
+    ws.append(headers)
+
+    header_fill = PatternFill(
+        start_color='732D3A',
+        end_color='732D3A',
+        fill_type='solid'
+    )
+
+    for cell in ws[1]:
+        cell.font = Font(color='FFFFFF', bold=True)
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+
+    for no, t in enumerate(tiket, start=1):
+        ws.append([
             no,
             t.kode or '-',
             t.nama or '-',
@@ -867,22 +876,90 @@ def export_csv():
             t.jenis_tiket or '-',
             t.jumlah_peserta or 0,
             'Hadir' if t.is_used else 'Belum Hadir',
-            format_wib(
-                t.waktu_daftar
-            ) if t.waktu_daftar else '-',
-            format_wib(
-                t.waktu_scan
-            ) if t.waktu_scan else '-'
+            format_wib(t.waktu_daftar) if t.waktu_daftar else '-',
+            format_wib(t.waktu_scan) if t.waktu_scan else '-'
         ])
+
+    column_widths = [6, 14, 22, 16, 26, 16, 14, 14, 14, 20, 20]
+    for i, width in enumerate(column_widths, start=1):
+        ws.column_dimensions[
+            ws.cell(row=1, column=i).column_letter
+        ].width = width
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return Response(
+        output.getvalue(),
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={
+            'Content-Disposition':
+                'attachment; filename=data_peserta_mms.xlsx'
+        }
+    )
+
+
+@app.route('/export/pdf')
+def export_pdf():
+
+    tiket = Tiket.query.order_by(
+        Tiket.id.asc()
+    ).all()
+
+    output = io.BytesIO()
+
+    doc = SimpleDocTemplate(
+        output,
+        pagesize=landscape(A4),
+        topMargin=20,
+        bottomMargin=20
+    )
+
+    data = [[
+        'No', 'Kode', 'Nama', 'No Telp', 'Email',
+        'Referal', 'Jenis', 'Peserta', 'Status', 'Daftar', 'Scan'
+    ]]
+
+    for no, t in enumerate(tiket, start=1):
+        data.append([
+            str(no),
+            t.kode or '-',
+            t.nama or '-',
+            t.no_telp or '-',
+            t.email or '-',
+            t.kode_referal or '-',
+            t.jenis_tiket or '-',
+            str(t.jumlah_peserta or 0),
+            'Hadir' if t.is_used else 'Belum Hadir',
+            format_wib(t.waktu_daftar) if t.waktu_daftar else '-',
+            format_wib(t.waktu_scan) if t.waktu_scan else '-'
+        ])
+
+    table = Table(data, repeatRows=1)
+
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#732D3A')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTSIZE', (0, 0), (-1, -1), 7),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E5D5D0')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1),
+            [colors.white, colors.HexColor('#FAF6F5')]),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+
+    doc.build([table])
 
     output.seek(0)
 
     return Response(
         output.getvalue(),
-        mimetype='text/csv; charset=utf-8',
+        mimetype='application/pdf',
         headers={
             'Content-Disposition':
-                'attachment; filename=data_peserta_mms.csv'
+                'attachment; filename=data_peserta_mms.pdf'
         }
     )
 
