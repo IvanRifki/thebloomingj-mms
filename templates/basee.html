@@ -1,34 +1,54 @@
 <!DOCTYPE html>
+
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>{% block title %}The Blooming Journey MMS{% endblock %}</title>
+
     <meta name="description" content="Sistem Tiket Digital Kajian Offline MMS 2026">
+
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='mms.png') }}">
+
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='mms.png') }}">
+
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap"
         rel="stylesheet" />
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
     {% block head %}{% endblock %}
+
 </head>
 
 <body>
+
     <div class="scroll-progress" id="scrollBar"></div>
 
     <nav id="navbar">
+
         <div class="nav-logo">
+
             <img src="{{ url_for('static', filename='logo.png') }}" alt="logo"
                 style="height: 36px; vertical-align: middle; margin-right: 8px;">
+
             <span class="logo-the">The</span>
+
             <span class="logo-bloom">Blooming Journey</span>
+
         </div>
 
         <button class="nav-toggle" id="navToggle" type="button" aria-label="Buka menu">
+
             <i class="fas fa-bars"></i>
+
         </button>
 
         <ul class="nav-links" id="navLinks">
@@ -39,51 +59,80 @@
     </nav>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
+
     {% if messages %}
+
     <div class="container" style="margin-top: 1rem;">
+
         {% for category, message in messages %}
+
         <div class="mms-alert mms-alert-{{ category }}">
+
             <i
                 class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+
             {{ message }}
+
         </div>
+
         {% endfor %}
+
     </div>
+
     {% endif %}
+
     {% endwith %}
 
     <main>
+
         {% block content %}{% endblock %}
+
     </main>
 
     {% block scripts %}{% endblock %}
 
     <script>
+
         const navToggle = document.getElementById('navToggle');
+
         const navLinks = document.getElementById('navLinks');
 
         if (navToggle && navLinks) {
+
             navToggle.addEventListener('click', function () {
+
                 navLinks.classList.toggle('active');
 
                 const icon = navToggle.querySelector('i');
 
                 if (navLinks.classList.contains('active')) {
+
                     icon.classList.remove('fa-bars');
+
                     icon.classList.add('fa-xmark');
+
                 } else {
+
                     icon.classList.remove('fa-xmark');
+
                     icon.classList.add('fa-bars');
+
                 }
+
             });
 
             navLinks.querySelectorAll('a').forEach(function (link) {
+
                 link.addEventListener('click', function () {
+
                     navLinks.classList.remove('active');
 
                     const icon = navToggle.querySelector('i');
+
                     icon.classList.remove('fa-xmark');
+
                     icon.classList.add('fa-bars');
+
                 });
             });
         }
