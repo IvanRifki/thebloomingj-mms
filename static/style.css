@@ -2019,3 +2019,14 @@ a:hover {
     padding: 2rem 1rem;
     box-sizing: border-box;
 }
+
+.paket-card.paket-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.paket-card.paket-disabled .paket-title,
+.paket-card.paket-disabled .paket-desc {
+    text-decoration: line-through;
+}
