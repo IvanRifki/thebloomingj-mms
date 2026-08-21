@@ -682,13 +682,20 @@ footer span {
         position: relative;
     }
 
+    #navbar {
+        position: relative;
+    }
+
     .nav-toggle {
-        display: none;
-        background: none;
+        display: block !important;
+        background: transparent;
         border: none;
         font-size: 1.5rem;
         color: var(--soft);
         cursor: pointer;
+        padding: 8px;
+        margin-left: auto;
+        z-index: 10001;
     }
 
     .nav-links {
@@ -704,7 +711,7 @@ footer span {
         padding: 1rem 24px;
         gap: 16px;
         border-bottom: 1px solid rgba(124, 92, 191, 0.12);
-        z-index: 99;
+        z-index: 10000;
     }
 
     .nav-links.open {
@@ -712,7 +719,7 @@ footer span {
     }
 
     .nav-links.active {
-        display: flex;
+        display: flex !important;
     }
 
     section {
