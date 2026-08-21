@@ -1114,6 +1114,24 @@
         input.value = value;
     }
 
+    function changeEarlyBird(delta) {
+
+        const input = document.getElementById('earlyBirdInput');
+
+        if (!input) return;
+
+        let value = parseInt(input.value, 10);
+
+        if (isNaN(value)) {
+            value = 1;
+        }
+
+        value += delta;
+
+        value = Math.max(1, value);
+
+        input.value = value;
+    }
     /* =====================================================
        MODAL RESET SEMUA
        ===================================================== */
