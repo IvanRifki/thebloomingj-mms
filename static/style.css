@@ -47,6 +47,8 @@ body {
 
 /* ── NAVBAR ── */
 
+/* ── NAVBAR ── */
+
 nav {
     position: fixed;
     top: 0;
@@ -55,7 +57,7 @@ nav {
     z-index: 100;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 0 48px;
     height: 65px;
     background: rgba(240, 239, 246, 0.85);
@@ -75,6 +77,7 @@ nav.scrolled {
     color: var(--soft);
     letter-spacing: -0.02em;
     margin-right: 4px;
+    white-space: nowrap;
 }
 
 .logo-bloom {
@@ -83,9 +86,16 @@ nav.scrolled {
     font-weight: 700;
     color: var(--soft);
     letter-spacing: -0.02em;
+    white-space: nowrap;
 }
 
-/* ── tombol hamburger — hidden di desktop ── */
+.nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+    color: var(--soft);
+    margin-left: auto;
+}
 
 .nav-toggle {
     display: none;
@@ -96,13 +106,6 @@ nav.scrolled {
     cursor: pointer;
     order: 3;
     padding: 0.5rem;
-}
-
-.nav-links {
-    display: flex;
-    gap: 36px;
-    list-style: none;
-    color: var(--soft);
 }
 
 @font-face {
