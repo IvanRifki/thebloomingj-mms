@@ -957,12 +957,13 @@ footer span {
     }
 
     .hero-title {
-        font-size: clamp(4.5rem, 18vw, 7rem);
+        font-size: clamp(5.5rem, 22vw, 8rem);
+        margin-bottom: 45px;
     }
 
     .hero-title .word-blooming,
     .hero-title .word-journey {
-        font-size: clamp(4.5rem, 18vw, 7rem);
+        font-size: clamp(5.5rem, 22vw, 8rem);
     }
 }
 
