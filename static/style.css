@@ -201,7 +201,7 @@ section:nth-child(even) {
     text-transform: uppercase;
     color: var(--white);
     text-align: center;
-    margin-top: 28px;
+    margin-top: 0px;
     margin-bottom: 8px;
 }
 
@@ -226,7 +226,7 @@ section:nth-child(even) {
     letter-spacing: -0.02em;
     color: var(--soft);
     margin-top: -20px;
-    margin-bottom: 0;
+    margin-bottom: 45px;
 }
 
 .hero-title .word-blooming {
