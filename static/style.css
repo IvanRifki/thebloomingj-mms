@@ -74,6 +74,7 @@ nav.scrolled {
     font-weight: 700;
     color: var(--soft);
     letter-spacing: -0.02em;
+    margin-right: 4px;
 }
 
 .logo-bloom {
