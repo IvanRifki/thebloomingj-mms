@@ -958,7 +958,7 @@ footer span {
 
     .hero-title {
         font-size: clamp(5.5rem, 22vw, 8rem);
-        margin-bottom: 45px;
+        margin-bottom: 30px;
     }
 
     .hero-title .word-blooming,
