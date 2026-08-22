@@ -218,7 +218,6 @@ section:nth-child(even) {
     letter-spacing: -0.02em;
     color: var(--soft);
     margin-top: -20px;
-    margin-bottom: 25px;
 }
 
 .hero-title .word-blooming {
