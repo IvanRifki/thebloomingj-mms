@@ -460,10 +460,11 @@ section:nth-child(even) {
 .card {
     border-radius: 20px;
     overflow: hidden;
-    border: 1.5px solid black;
+    border: 2px solid black;
     background: var(--white);
     text-decoration: none;
     transition: transform 0.25s, box-shadow 0.25s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .card:hover {
