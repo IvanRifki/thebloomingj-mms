@@ -4,42 +4,45 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}The Blooming Journey MMS{% endblock %}</title>
-    <meta name="description" content="Sistem Tiket Digital Kajian Offline MMS 2026">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='mms.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='mms.png') }}">
+    <title>The Blooming Journey MMS</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+
+    <div class="scroll-progress" id="scrollBar"></div>
+
     <nav id="navbar">
-
         <div class="nav-logo">
-            <a href="/admin">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="logo"
-                    style="height: 36px; vertical-align: middle; margin-right: 8px;">
-            </a>
+            <div class="nav-logo">
+                <a href="/admin">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="logo"
+                        style="height: 36px; vertical-align: middle; margin-right: 8px;">
+                </a>
+            </div>
         </div>
-
         <span class="logo-the">The</span>
         <span class="logo-bloom">Blooming Journey</span>
 
-        <ul class="nav-links">
+        <button class="nav-toggle" onclick="toggleNav()" aria-label="Buka menu">&#9776;</button>
+
+        <ul class="nav-links" id="navLinks">
             <li><a href="#home" class="active">Home</a></li>
             <li><a href="#join">How To Join</a></li>
             <li><a href="#mms">About MMS</a></li>
-            <li><a href="#tambahan">tambahan</a></li>
+            <li><a href="#faq">FAQ</a></li>
             <li><a href="#contact">Contact Us</a></li>
         </ul>
-
     </nav>
 
     <!-- HOME -->
     <section id="home">
-        <img src="{{ url_for('static', filename='bungaa.png') }}" class="bunga-bg" alt="">
+        <div class="bunga-bg-fallback"></div>
+        <div class="petals" id="petals"></div>
+
         <div class="hero-content">
             <div class="hero-sub"></div>
             <h1 class="hero-title glow-text">
@@ -51,39 +54,45 @@
                 <p class="eyebrow-main">MUSLIMAH LEVEL-UP</p>
                 <span>ROOTED | UNFOLDING | BECOMING</span>
             </div>
+
+            <!-- Countdown: ganti target-date sesuai tanggal seminar sesungguhnya -->
+            <div class="countdown-strip" id="countdown" data-target="2026-10-18T08:00:00">
+                <div class="countdown-unit"><span class="countdown-num" id="cd-days">--</span><span
+                        class="countdown-label">Hari</span></div>
+                <div class="countdown-unit"><span class="countdown-num" id="cd-hours">--</span><span
+                        class="countdown-label">Jam</span></div>
+                <div class="countdown-unit"><span class="countdown-num" id="cd-mins">--</span><span
+                        class="countdown-label">Menit</span></div>
+                <div class="countdown-unit"><span class="countdown-num" id="cd-secs">--</span><span
+                        class="countdown-label">Detik</span></div>
+            </div>
+
             <div class="button-row">
-                <a href="#join" class="btn">Get To Know Us</a>
-                <a href="/daftar" class="btn">Daftar Sekarang</a>
+                <a href="#join" class="btn">How To Join?</a>
+                <a href="#" class="btn">Daftar Sekarang</a>
             </div>
         </div>
     </section>
 
     <!-- HOW TO JOIN -->
     <section id="join">
-        <div class="about-header">
+        <div class="about-header reveal-up">
             <div class="section-label">Seminar Madrasah Mar'ah Shalihah</div>
             <h2 class="section-titletwo">How To Join Us? <br>Bloom Where Allah Places You</h2>
-            <p class="section-desc">Luruskan niat dan tunjukkan keberanian untuk melanjutkan perjalanan yang Allah pilih
-                untukmu. Ikuti langkah-langkah di bawah ini untuk mendapatkan informasi lebih lanjut.</p>
+            <p class="section-desc">Luruskan niat dan tunjukkan keberanian untuk melanjutkan perjalanan yang Allah
+                pilih untukmu. Ikuti langkah-langkah di bawah ini untuk mendapatkan informasi lebih lanjut.</p>
         </div>
 
         <div class="timeline">
-
             <div class="tl-step">
                 <div class="tl-dot-wrap">
                     <div class="tl-dot">1</div>
                     <div class="tl-line"></div>
                 </div>
                 <div class="tl-content">
-                    <div class="tl-badge"></div>
                     <div class="tl-title">Klik 'Daftar Sekarang'</div>
                     <p class="tl-desc">Klik tombol 'Daftar Sekarang' untuk memulai proses pendaftaran pada halaman
                         sebelumnya.</p>
-                    <!--<div class="tl-tag-row">
-                        <span class="tl-tag">Blogger</span>
-                        <span class="tl-tag">HTML dasar</span>
-                        <span class="tl-tag">Nulis iseng</span>
-                    </div>!-->
                 </div>
             </div>
 
@@ -93,10 +102,9 @@
                     <div class="tl-line"></div>
                 </div>
                 <div class="tl-content">
-                    <div class="tl-badge"></div>
                     <div class="tl-title">Isi Form Pendaftaran</div>
-                    <p class="tl-desc">Isi semua kolom yang tersedia dengan informasi yang valid dan lengkap. Perlu di
-                        ingat bahwa nomor telepon dan email harus di isi dengan benar.</p>
+                    <p class="tl-desc">Isi semua kolom yang tersedia dengan informasi yang valid dan lengkap. Perlu
+                        di ingat bahwa nomor telepon dan email harus di isi dengan benar.</p>
                 </div>
             </div>
 
@@ -106,14 +114,10 @@
                     <div class="tl-line"></div>
                 </div>
                 <div class="tl-content">
-                    <div class="tl-badge"></div>
                     <div class="tl-title">Selesaikan Pembayaran</div>
-                    <p class="tl-desc">Lakukan pembayaran sesuai dengan instruksi yang telah diberikan. Cantumkan bukti
-                        pembayaran dengan format nama lengkap-seminar-jenis tiket.</p>
-                    <p class="tl-desc">Contoh: </p>
-                    <p class="tl-desc">Naila Nazua Khumairoh-Seminar-Early bird single</p>
-                    <p class="tl-desc">Naila Nazua Khumairoh-Seminar-Early bird circle</p>
-                    <p class="tl-desc">Naila Nazua Khumairoh-Seminar-Normal</p>
+                    <p class="tl-desc">Lakukan pembayaran sesuai dengan instruksi yang telah diberikan. Cantumkan
+                        bukti pembayaran dengan format nama lengkap-seminar-jenis tiket.</p>
+                    <p class="tl-desc">Contoh: Naila Nazua Khumairoh-Seminar-Early bird single</p>
                 </div>
             </div>
 
@@ -123,11 +127,9 @@
                     <div class="tl-line"></div>
                 </div>
                 <div class="tl-content">
-                    <div class="tl-badge"></div>
                     <div class="tl-title">Tunggu Konfirmasi Pembayaran</div>
-                    <p class="tl-desc">Pendaftaran kamu akan segera di proses oleh admin dalam kurun waktu 24 jam.</p>
-                    <p class="tl-desc">Setelah pembayaran di konfirmasi, kamu akan menerima email berisi kode QR sebagai
-                        tiket masuk ke acara. Pastikan untuk menyimpan kode QR tersebut dengan baik.</p>
+                    <p class="tl-desc">Pendaftaran kamu akan segera di proses oleh admin dalam kurun waktu 24 jam.
+                        Setelah dikonfirmasi, kamu akan menerima email berisi kode QR sebagai tiket masuk.</p>
                 </div>
             </div>
 
@@ -137,67 +139,60 @@
                     <div class="tl-line"></div>
                 </div>
                 <div class="tl-content">
-                    <div class="tl-badge"></div>
                     <div class="tl-title">Masuk ke Group WhatsApp</div>
-                    <p class="tl-desc">Link group WhatsApp akan dikirimkan ke email yang telah kamu daftarkan bersamaan
-                        dengan kode QR.</p>
+                    <p class="tl-desc">Link group WhatsApp akan dikirimkan ke email yang telah kamu daftarkan
+                        bersamaan dengan kode QR.</p>
                 </div>
             </div>
 
             <div class="tl-step">
                 <div class="tl-dot-wrap">
                     <div class="tl-dot">6</div>
-                    <div class="tl-line"></div>
                 </div>
                 <div class="tl-content">
-                    <div class="tl-badge"></div>
                     <div class="tl-title">Selesai!</div>
-                    <p class="tl-desc">Kamu sudah selesai mendaftar dan siap untuk mengikuti acara!
-                    <p class="tl-desc">Apabila kamu memiliki pertanyaan lebih lanjut, jangan ragu untuk menghubungi
-                        kami.</p>
-                    </p>
+                    <p class="tl-desc">Kamu sudah selesai mendaftar dan siap untuk mengikuti acara! Ada pertanyaan?
+                        Jangan ragu menghubungi kami.</p>
                 </div>
             </div>
-
         </div>
     </section>
 
-    <!-- PORTFOLIO -->
+    <!-- ABOUT MMS -->
     <section id="mms">
-        <div class="section-label">Madrasah Mar'ah Shalihah</div>
-        <h2 class="section-title">Yuk Kenalan dengan MMS!</h2>
-        <p class="section-desc">Madrasah Mar'ah Shalihah atau dikenal dengan singkatan MMS adalah program belajar ilmu
-            syar'i secara online khusus untuk muslimah. Diasuh dan di bimbing oleh Ustadz Dr. Ali Musri Semjan
-            Putra, M.A</p>
-        <p class="section-desc">Berikut adalah beberapa informasi tentang program MMS:</p>
+        <div class="section-label reveal-up">Madrasah Mar'ah Shalihah</div>
+        <h2 class="section-title reveal-up">Yuk Kenalan dengan MMS!</h2>
+        <p class="section-desc reveal-up">Madrasah Mar'ah Shalihah atau dikenal dengan singkatan MMS adalah program
+            belajar ilmu syar'i secara online khusus untuk muslimah. Diasuh dan di bimbing oleh Ustadz Dr. Ali
+            Musri Semjan Putra, M.A</p>
+
         <div class="card-grid">
-            <a href="https://www.instagram.com/madrasah.wanita.shalihah" class="card">
+            <a href="https://www.instagram.com/madrasah.wanita.shalihah" class="card reveal-up">
                 <div class="card-thumb">
-                    <img src="{{ url_for('static', filename='mms.png') }}" alt="logo mms">
+                    <img src="{{ url_for('static', filename='mms.png') }}" alt="logo mms" class="card-thumb-img">
                 </div>
                 <div class="card-body">
                     <div class="card-tag">Instagram</div>
                     <div class="card-title">@madrasah.wanita.shalihah</div>
                     <p class="card-text">Kunjungi akun Instagram resmi Madrasah Mar'ah Shalihah untuk mendapatkan
-                        informasi terbaru tentang program
-                        pembelajaran, tips belajar, dan konten inspiratif seputar ilmu syar'i bagi muslimah.</p>
-                    </p>
+                        informasi terbaru tentang program pembelajaran, tips belajar, dan konten inspiratif seputar
+                        ilmu syar'i bagi muslimah.</p>
                 </div>
             </a>
-            <a href="https://www.youtube.com/@MadrasahWanitaShalihah" class="card">
+            <a href="https://www.youtube.com/@MadrasahWanitaShalihah" class="card reveal-up">
                 <div class="card-thumb">
-                    <img src="{{ url_for('static', filename='mms.png') }}" alt="logo mms">
+                    <img src="{{ url_for('static', filename='mms.png') }}" alt="logo mms" class="card-thumb-img">
                 </div>
                 <div class="card-body">
                     <div class="card-tag">Youtube</div>
                     <div class="card-title">Kajian dan konten ilmu syar'i</div>
-                    <p class="card-text">Kunjungi kanal YouTube resmi Madrasah Mar'ah Shalihah untuk menonton kajian dan
-                        konten edukatif seputar ilmu syar'i bagi muslimah.</p>
+                    <p class="card-text">Kunjungi kanal YouTube resmi Madrasah Mar'ah Shalihah untuk menonton kajian
+                        dan konten edukatif seputar ilmu syar'i bagi muslimah.</p>
                 </div>
             </a>
-            <a href="https://mmshalihah.com" class="card">
+            <a href="https://mmshalihah.com" class="card reveal-up">
                 <div class="card-thumb">
-                    <img src="{{ url_for('static', filename='mms.png') }}" alt="logo mms">
+                    <img src="{{ url_for('static', filename='mms.png') }}" alt="logo mms" class="card-thumb-img">
                 </div>
                 <div class="card-body">
                     <div class="card-tag">Website</div>
@@ -210,20 +205,51 @@
         </div>
     </section>
 
-    <!-- SKILLS -->
-    <section id="tambahan">
+    <!-- FAQ -->
+    <section id="faq">
+        <div class="section-label reveal-up">pertanyaan</div>
+        <h2 class="section-title reveal-up">Sering Ditanyakan</h2>
+        <p class="section-desc reveal-up">Beberapa hal yang paling sering ditanyakan calon peserta sebelum
+            mendaftar.</p>
 
+        <div class="faq-list">
+            <div class="faq-item">
+                <button class="faq-question">Apakah tiket bisa direfund jika berhalangan hadir?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Tiket yang sudah dikonfirmasi bersifat final dan tidak dapat direfund, namun dapat dialihkan
+                        ke orang lain dengan konfirmasi ke admin maksimal H-3 acara.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Berapa lama proses konfirmasi pembayaran?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Admin akan memverifikasi bukti pembayaran dalam waktu maksimal 24 jam pada hari kerja.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Bagaimana jika saya belum menerima kode QR?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Cek folder spam pada email kamu terlebih dahulu. Jika masih belum ditemukan, hubungi admin
+                        registrasi melalui WhatsApp yang tertera di bagian kontak.</p>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- CONTACT -->
     <section id="contact">
-        <div class="section-label">kontak</div>
-        <h2 class="section-title">Ask Us!</h2>
+        <div class="section-label reveal-up">kontak</div>
+        <h2 class="section-title reveal-up">Ask Us!</h2>
         <div class="contact-grid">
-            <div>
-                <p class="section-desc">Punya pertanyaan seputar seminar, program mms ataupun proses mendaftar? Hubungi
-                    kami melalui whatsapp.
-                </p>
+            <div class="reveal-up">
+                <p class="section-desc">Punya pertanyaan seputar seminar, program mms ataupun proses mendaftar?
+                    Hubungi kami melalui whatsapp.</p>
                 <div class="contact-items">
                     <div class="contact-item">
                         <div class="contact-icon">N</div>
@@ -231,6 +257,7 @@
                             <strong>Naila Nazua Khumairoh (Registrasi)</strong>
                             <span>+62895-622-999-781</span>
                         </div>
+                        <button class="copy-hint" data-copy="+62895622999781">Salin</button>
                     </div>
                     <div class="contact-item">
                         <div class="contact-icon">@</div>
@@ -240,9 +267,18 @@
                         </div>
                     </div>
                 </div>
+                <a class="wa-btn" href="https://wa.me/62895622999781" target="_blank" rel="noopener">
+                    Chat via WhatsApp &rarr;
+                </a>
             </div>
         </div>
     </section>
+
+    <footer>
+        &copy; 2026 <span>The Blooming Journey</span> &mdash; Madrasah Mar'ah Shalihah
+    </footer>
+
+    <a href="#home" class="sticky-cta" id="stickyCta">Daftar Sekarang &nearr;</a>
 
     <script>
         // Scroll progress bar
@@ -254,13 +290,11 @@
         window.addEventListener('scroll', () => {
             const scrollTop = window.scrollY;
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = (scrollTop / docHeight) * 100;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
             scrollBar.style.width = progress + '%';
 
-            // Navbar shadow on scroll
             navbar.classList.toggle('scrolled', scrollTop > 20);
 
-            // Active nav link
             let current = '';
             sections.forEach(sec => {
                 if (scrollTop >= sec.offsetTop - 100) current = sec.id;
@@ -270,37 +304,121 @@
                 link.classList.remove('active');
                 if (link.getAttribute('href') === '#' + current) link.classList.add('active');
             });
+
+            // sticky CTA muncul setelah lewat hero
+            const home = document.getElementById('home');
+            document.getElementById('stickyCta').classList.toggle('show', scrollTop > home.offsetHeight * 0.8);
         });
 
         function toggleNav() {
             document.getElementById('navLinks').classList.toggle('open');
         }
-        // Smooth scroll for nav links
+
         navLinks.forEach(link => {
             link.addEventListener('click', e => {
                 e.preventDefault();
                 const target = document.querySelector(link.getAttribute('href'));
                 if (target) target.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('navLinks').classList.remove('open');
             });
         });
 
         // Timeline step reveal on scroll
         const tlSteps = document.querySelectorAll('.tl-step');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry, i) => {
+        const tlObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    // stagger each step slightly
                     const idx = Array.from(tlSteps).indexOf(entry.target);
-                    setTimeout(() => {
-                        entry.target.classList.add('visible');
-                    }, idx * 100);
-                    observer.unobserve(entry.target);
+                    setTimeout(() => entry.target.classList.add('visible'), idx * 100);
+                    tlObserver.unobserve(entry.target);
                 }
             });
         }, { threshold: 0.2 });
+        tlSteps.forEach(step => tlObserver.observe(step));
 
-        tlSteps.forEach(step => observer.observe(step));
+        // Generic fade-up reveal for section headers/cards
+        const revealEls = document.querySelectorAll('.reveal-up');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('in-view'), i * 60);
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+        revealEls.forEach(el => revealObserver.observe(el));
 
+        // Falling petals in hero
+        (function initPetals() {
+            const wrap = document.getElementById('petals');
+            const colors = ['#D9BBB4', '#A6727C', '#f0d9e0'];
+            const count = window.innerWidth < 640 ? 10 : 18;
+            for (let i = 0; i < count; i++) {
+                const petal = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                petal.classList.add('petal');
+                petal.setAttribute('viewBox', '0 0 24 24');
+                const size = 10 + Math.random() * 12;
+                petal.style.width = size + 'px';
+                petal.style.height = size + 'px';
+                petal.style.left = Math.random() * 100 + '%';
+                petal.style.setProperty('--drift', (Math.random() * 120 - 60) + 'px');
+                petal.style.animationDuration = (9 + Math.random() * 9) + 's';
+                petal.style.animationDelay = (Math.random() * 12) + 's';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                petal.innerHTML = `<path d="M12 2c3 3 6 5 6 9a6 6 0 0 1-12 0c0-4 3-6 6-9z" fill="${color}"/>`;
+                wrap.appendChild(petal);
+            }
+        })();
+
+        // Countdown timer (ganti data-target di HTML sesuai tanggal seminar asli)
+        (function initCountdown() {
+            const el = document.getElementById('countdown');
+            const target = new Date(el.dataset.target).getTime();
+            const dEl = document.getElementById('cd-days');
+            const hEl = document.getElementById('cd-hours');
+            const mEl = document.getElementById('cd-mins');
+            const sEl = document.getElementById('cd-secs');
+
+            function tick() {
+                const diff = target - Date.now();
+                if (diff <= 0) {
+                    el.style.display = 'none';
+                    return;
+                }
+                const d = Math.floor(diff / 86400000);
+                const h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                dEl.textContent = String(d).padStart(2, '0');
+                hEl.textContent = String(h).padStart(2, '0');
+                mEl.textContent = String(m).padStart(2, '0');
+                sEl.textContent = String(s).padStart(2, '0');
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.faq-item').classList.toggle('open');
+            });
+        });
+
+        // Copy phone number
+        document.querySelectorAll('.copy-hint').forEach(btn => {
+            btn.addEventListener('click', () => {
+                navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+                    const original = btn.textContent;
+                    btn.textContent = 'Tersalin!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = original;
+                        btn.classList.remove('copied');
+                    }, 1500);
+                });
+            });
+        });
     </script>
 </body>
 

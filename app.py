@@ -678,10 +678,10 @@ def pendaftaran_normal():
         ).strip().upper()
 
         if kode_ref_upper in KODE_REFERAL_VALID:
-            harga_final = 388000
+            harga_final = 398000
             kode_referal_final = kode_ref_upper
         else:
-            harga_final = 389000
+            harga_final = 399000
             kode_referal_final = (
                 kode_referal or None
             )
