@@ -967,6 +967,16 @@ footer span {
     }
 }
 
+/* ── BACKGROUND ── */
+
+#join,
+#mms,
+#tambahan,
+#contact {
+    background-color: white;
+    padding: 60px 20px;
+}
+
 /* ── LOGIN PAGE ── */
 
 .login-wrapper {
