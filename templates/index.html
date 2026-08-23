@@ -8,7 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 
 <body>
@@ -17,12 +17,10 @@
 
     <nav id="navbar">
         <div class="nav-logo">
-            <div class="nav-logo">
-                <a href="/admin">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="logo"
-                        style="height: 36px; vertical-align: middle; margin-right: 8px;">
-                </a>
-            </div>
+            <a href="/admin">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="logo"
+                    style="height: 36px; vertical-align: middle; margin-right: 8px;">
+            </a>
         </div>
         <span class="logo-the">The</span>
         <span class="logo-bloom">Blooming Journey</span>
