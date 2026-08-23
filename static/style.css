@@ -682,16 +682,6 @@ footer span {
 
 /* ── SCROLL INDICATOR ── */
 
-.scroll-progress {
-    position: fixed;
-    top: 64px;
-    left: 0;
-    height: 2px;
-    background: var(--violet);
-    z-index: 99;
-    transition: width 0.1s;
-}
-
 @media (max-width: 768px) {
     nav {
         display: flex;
@@ -725,6 +715,7 @@ footer span {
         right: 0;
         width: 100%;
         background: rgba(240, 239, 246, 0.97);
+        color: var(--soft);
         backdrop-filter: blur(20px);
         padding: 1rem 24px;
         gap: 16px;
