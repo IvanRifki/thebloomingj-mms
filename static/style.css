@@ -454,6 +454,7 @@ section:nth-child(even) {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
+    color: var(--violet);
 }
 
 .card {
