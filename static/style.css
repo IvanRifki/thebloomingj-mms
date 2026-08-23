@@ -460,7 +460,7 @@ section:nth-child(even) {
 .card {
     border-radius: 20px;
     overflow: hidden;
-    border: 2px solid black;
+    border: 2px solid #3c2a4d;
     background: var(--white);
     text-decoration: none;
     transition: transform 0.25s, box-shadow 0.25s;
