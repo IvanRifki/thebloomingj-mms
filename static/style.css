@@ -273,7 +273,7 @@ section:nth-child(even) {
     font-size: 0.72rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: white;
+    color: black;
     font-weight: 500;
     margin-bottom: 12px;
 }
@@ -284,7 +284,7 @@ section:nth-child(even) {
     font-weight: 550;
     line-height: 1.15;
     letter-spacing: -0.02em;
-    color: white;
+    color: black;
     margin-bottom: 15px;
 }
 
@@ -302,7 +302,7 @@ section:nth-child(even) {
     text-transform: uppercase;
     font-style: italic;
     font-size: 1rem;
-    color: white;
+    color: var(--soft);
     max-width: 520px;
     line-height: 1.75;
     margin-bottom: 48px;
@@ -502,13 +502,14 @@ section:nth-child(even) .card {
 
 .card-body {
     padding: 20px 22px 24px;
+    color: var(--violet);
 }
 
 .card-tag {
     font-size: 0.7rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--violet);
+    color: white;
     font-weight: 500;
     margin-bottom: 8px;
 }
