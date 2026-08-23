@@ -466,10 +466,6 @@ section:nth-child(even) {
     transition: transform 0.25s, box-shadow 0.25s;
 }
 
-section:nth-child(even) .card {
-    background: var(--mist);
-}
-
 .card:hover {
     transform: translateY(-6px);
     box-shadow: 0 16px 40px rgba(124, 92, 191, 0.12);
