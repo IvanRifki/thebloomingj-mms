@@ -715,7 +715,6 @@ footer span {
         right: 0;
         width: 100%;
         background: rgba(240, 239, 246, 0.97);
-        color: var(--soft);
         backdrop-filter: blur(20px);
         padding: 1rem 24px;
         gap: 16px;
