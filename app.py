@@ -1,14 +1,20 @@
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
+
 import base64
 import csv
 import io
 import os
 import re
 import uuid
-import qrcode
+import smtplib
 
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+import qrcode
 from dotenv import load_dotenv
+
 from flask import (
     Flask,
     Response,
@@ -22,6 +28,7 @@ from flask import (
     send_from_directory,
     make_response
 )
+
 from flask_login import (
     LoginManager,
     UserMixin,
@@ -30,17 +37,29 @@ from flask_login import (
     login_required,
     current_user
 )
+
 from flask_sqlalchemy import SQLAlchemy
+
 from supabase import create_client, Client
+
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
+
 load_dotenv()
+
+MAIL_USERNAME = os.getenv("MAIL_USERNAME")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+MAIL_SENDER_NAME = os.getenv("MAIL_SENDER_NAME", "Seminar Offline")
+
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -78,6 +97,25 @@ supabase = create_client(
 )
 
 WIB = ZoneInfo('Asia/Jakarta')
+
+
+def kirim_email(penerima, subjek, isi_html):
+    msg = MIMEMultipart("alternative")
+
+    msg["From"] = f"{MAIL_SENDER_NAME} <{MAIL_USERNAME}>"
+    msg["To"] = penerima
+    msg["Subject"] = subjek
+
+    msg.attach(MIMEText(isi_html, "html", "utf-8"))
+
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+        server.sendmail(
+            MAIL_USERNAME,
+            penerima,
+            msg.as_string()
+        )
 
 
 def wib_now():
@@ -769,6 +807,29 @@ def pendaftaran_normal():
         'normal_daftar.html',
         sisa_normal=sisa_normal
     )
+
+
+@app.route('/test-email')
+def test_email():
+    try:
+        kirim_email(
+            "madrasahwanita21@gmail.com",
+            "Tes Email - Seminar Offline",
+            """
+            <html>
+                <body>
+                    <h2>Halo!</h2>
+                    <p>Ini adalah email percobaan dari website <b>Seminar Offline</b>.</p>
+                    <p>Kalau kamu menerima email ini, berarti Gmail SMTP sudah berhasil 🎉</p>
+                </body>
+            </html>
+            """
+        )
+
+        return "Email berhasil dikirim!"
+
+    except Exception as e:
+        return f"Email gagal dikirim: {e}", 500
 
 
 @app.route('/sukses')
