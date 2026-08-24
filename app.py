@@ -685,9 +685,26 @@ def pendaftaran():
 def pendaftaran_normal():
 
     KODE_REFERAL_VALID = [
-        'MMS2026',
-        'SAHABATMMS',
-        'BLOOMING01'
+        'TBJ-LWF',
+        'TBJ-PPI',
+        'TBJ-MWFH',
+        'TBJ-AGC',
+        'TBJKRIS01',
+        'TBJSITI02',
+        'TBJAISY03',
+        'TBJHAFS04',
+        'TBJSABR05',
+        'TBJULIN06',
+        'TBJRIKA07',
+        'TBJAYU08',
+        'TBJCIND09',
+        'TBJDELI10',
+        'TBJLINA11',
+        'TBJNAND12',
+        'TBJYULI13',
+        'TBJLELA14',
+        'TBJNURU15',
+        'TBJERIS16',
     ]
 
     kuota = get_kuota()
