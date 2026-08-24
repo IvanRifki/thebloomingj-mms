@@ -1293,41 +1293,31 @@
         const verified = checkbox.checked;
 
         checkbox.disabled = true;
-
         fetch('/verify_bukti/' + encodeURIComponent(tiketId), {
-
             method: 'POST',
-
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-
             body: JSON.stringify({ verified: verified })
-
         })
-
             .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('HTTP ' + response.status);
-                }
-                return response.json();
+                return response.json().then(function (data) {
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || ('HTTP ' + response.status));
+                    }
+                    return data;
+                });
             })
-
             .then(function (data) {
-                if (!data.success) {
-                    throw new Error(data.message || 'Gagal menyimpan verifikasi.');
-                }
                 checkbox.disabled = false;
             })
-
             .catch(function (error) {
                 console.error('Error verify bukti:', error);
                 alert(error.message || 'Koneksi bermasalah!');
-                checkbox.checked = !verified; // rollback tampilan kalau gagal
+                checkbox.checked = !verified;
                 checkbox.disabled = false;
             });
-
     });
 
     /* =====================================================
