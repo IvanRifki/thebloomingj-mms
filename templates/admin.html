@@ -743,6 +743,15 @@
 
         </div>
 
+        <div class="table-search">
+            <i class="fas fa-search"></i>
+
+            <input type="text" id="searchReferral" class="mms-input" placeholder="Cari kode referal..." oninput="searchKolomTable(
+            'searchReferral',
+            'tableBodyNormal',
+            5
+        )">
+        </div>
 
         <!-- TABLE -->
         <div class="mms-table-wrapper" style="overflow-x: auto;">
@@ -1381,6 +1390,31 @@
 
     }
 
+    function searchKolomTable(inputId, tableBodyId, columnIndex) {
+        const input = document.getElementById(inputId);
+        const tbody = document.getElementById(tableBodyId);
+
+        if (!input || !tbody) return;
+
+        const keyword = input.value.toLowerCase().trim();
+        const rows = tbody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+
+            if (!cells[columnIndex]) {
+                return;
+            }
+
+            const text = cells[columnIndex].textContent
+                .toLowerCase()
+                .trim();
+
+            row.style.display = text.includes(keyword)
+                ? ''
+                : 'none';
+        });
+    }
 
     /* =====================================================
        HAPUS TIKET
