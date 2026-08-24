@@ -7,11 +7,12 @@ import io
 import os
 import re
 import uuid
-import smtplib
-
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
+
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 import qrcode
 from dotenv import load_dotenv
@@ -56,11 +57,15 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 load_dotenv()
 
 MAIL_USERNAME = os.getenv("MAIL_USERNAME")
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 MAIL_SENDER_NAME = os.getenv("MAIL_SENDER_NAME", "Seminar Offline")
 
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
+GMAIL_CLIENT_ID = os.getenv("GMAIL_CLIENT_ID")
+GMAIL_CLIENT_SECRET = os.getenv("GMAIL_CLIENT_SECRET")
+GMAIL_REFRESH_TOKEN = os.getenv("GMAIL_REFRESH_TOKEN")
+
+GMAIL_SCOPES = [
+    "https://www.googleapis.com/auth/gmail.send"
+]
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -101,35 +106,64 @@ WIB = ZoneInfo('Asia/Jakarta')
 
 
 def kirim_email(penerima, subjek, isi_html, qr_bytes=None):
+    creds = Credentials(
+        token=None,
+        refresh_token=GMAIL_REFRESH_TOKEN,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=GMAIL_CLIENT_ID,
+        client_secret=GMAIL_CLIENT_SECRET,
+        scopes=GMAIL_SCOPES
+    )
+
+    service = build(
+        "gmail",
+        "v1",
+        credentials=creds
+    )
+
     msg = MIMEMultipart("related")
 
     msg["From"] = f"{MAIL_SENDER_NAME} <{MAIL_USERNAME}>"
     msg["To"] = penerima
     msg["Subject"] = subjek
 
-    msg.attach(MIMEText(isi_html, "html", "utf-8"))
+    msg.attach(
+        MIMEText(
+            isi_html,
+            "html",
+            "utf-8"
+        )
+    )
 
     if qr_bytes:
-        qr_image = MIMEImage(qr_bytes, _subtype="png")
+        qr_image = MIMEImage(
+            qr_bytes,
+            _subtype="png"
+        )
+
         qr_image.add_header(
             "Content-ID",
             "<qr_tiket>"
         )
+
         qr_image.add_header(
             "Content-Disposition",
             "inline",
             filename="qr-tiket.png"
         )
+
         msg.attach(qr_image)
 
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.starttls()
-        server.login(MAIL_USERNAME, MAIL_PASSWORD)
-        server.sendmail(
-            MAIL_USERNAME,
-            penerima,
-            msg.as_string()
-        )
+    raw_message = base64.urlsafe_b64encode(
+        msg.as_bytes()
+    ).decode("utf-8")
+
+    service.users().messages().send(
+        userId="me",
+        body={
+            "raw": raw_message
+        }
+    ).execute()
 
 
 def wib_now():
