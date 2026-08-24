@@ -1164,8 +1164,6 @@ def verify_bukti(tiket_id):
 
         tiket.bukti_terverifikasi = verified_baru
 
-        # Email hanya dikirim saat status berubah
-        # dari BELUM TERVERIFIKASI -> TERVERIFIKASI
         if verified_baru and not sebelumnya_terverifikasi:
 
             # Buat QR dari kode tiket yang sama
@@ -1201,7 +1199,7 @@ def verify_bukti(tiket_id):
                     ">
 
                         <h2 style="text-align:center;">
-                            Pembayaran Berhasil Diverifikasi 🎉
+                            Alhamdulillah, pembayaran Berhasil Diverifikasi 🎉
                         </h2>
 
                         <p>
@@ -1210,7 +1208,7 @@ def verify_bukti(tiket_id):
 
                         <p>
                             Pembayaran kamu untuk
-                            <b>Seminar Offline</b>
+                            <b>The Blooming Journey 2026</b>
                             telah berhasil diverifikasi oleh panitia.
                         </p>
 
@@ -1287,8 +1285,8 @@ def verify_bukti(tiket_id):
                         </p>
 
                         <p>
-                            Salam,<br>
-                            <b>Panitia Seminar Offline</b>
+                            With Love,<br>
+                            <b>The Blooming Journey Crew</b>
                         </p>
 
                     </div>
@@ -1299,7 +1297,7 @@ def verify_bukti(tiket_id):
 
             kirim_email(
                 tiket.email,
-                "Pembayaran Terverifikasi - Seminar Offline",
+                "Pembayaran Terverifikasi - The Blooming Journey 2026",
                 isi_email,
                 qr_bytes
             )
