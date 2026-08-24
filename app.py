@@ -158,12 +158,14 @@ def kirim_email(penerima, subjek, isi_html, qr_bytes=None):
         msg.as_bytes()
     ).decode("utf-8")
 
-    service.users().messages().send(
+    result = service.users().messages().send(
         userId="me",
         body={
             "raw": raw_message
         }
     ).execute()
+
+    print("GMAIL MESSAGE ID:", result.get("id"))
 
 
 def wib_now():
