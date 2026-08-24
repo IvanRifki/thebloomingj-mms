@@ -702,7 +702,7 @@ def pendaftaran_normal():
         'TBJLINA11',
         'TBJNAND12',
         'TBJYULI13',
-        'TBJLELA14',
+        'TBJLAYL14',
         'TBJNURU15',
         'TBJERIS16',
     ]
