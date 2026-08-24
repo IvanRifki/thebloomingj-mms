@@ -1288,6 +1288,78 @@
     }
 
     /* =====================================================
+   SEARCH KODE REFERAL
+   ===================================================== */
+
+    function searchKolomTable(inputId, tbodyId, columnIndex) {
+
+        const input = document.getElementById(inputId);
+        const tbody = document.getElementById(tbodyId);
+
+        if (!input || !tbody) return;
+
+        const keyword = input.value
+            .trim()
+            .toLowerCase();
+
+        const rows = tbody.querySelectorAll(
+            'tr:not(.empty-row):not(.search-empty-row)'
+        );
+
+        let visibleCount = 0;
+
+        rows.forEach(function (row) {
+
+            const cell = row.cells[columnIndex];
+
+            if (!cell) return;
+
+            const text = cell.textContent
+                .trim()
+                .toLowerCase();
+
+            const match = text.includes(keyword);
+
+            row.style.display = match ? '' : 'none';
+
+            if (match) {
+                visibleCount++;
+            }
+
+        });
+
+        let searchEmpty = tbody.querySelector(
+            '.search-empty-row'
+        );
+
+        if (keyword && visibleCount === 0) {
+
+            if (!searchEmpty) {
+
+                searchEmpty = document.createElement('tr');
+
+                searchEmpty.className = 'search-empty-row';
+
+                searchEmpty.innerHTML = `
+                <td colspan="11" class="empty-table">
+                    <div class="empty-table-icon">🔍</div>
+                    <p>Kode referal tidak ditemukan.</p>
+                </td>
+            `;
+
+                tbody.appendChild(searchEmpty);
+            }
+
+        } else {
+
+            if (searchEmpty) {
+                searchEmpty.remove();
+            }
+
+        }
+    }
+
+    /* =====================================================
        VERIFIKASI BUKTI TRANSFER
        ===================================================== */
 
