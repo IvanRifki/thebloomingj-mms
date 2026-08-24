@@ -11,6 +11,7 @@ import smtplib
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
 
 import qrcode
 from dotenv import load_dotenv
@@ -99,14 +100,27 @@ supabase = create_client(
 WIB = ZoneInfo('Asia/Jakarta')
 
 
-def kirim_email(penerima, subjek, isi_html):
-    msg = MIMEMultipart("alternative")
+def kirim_email(penerima, subjek, isi_html, qr_bytes=None):
+    msg = MIMEMultipart("related")
 
     msg["From"] = f"{MAIL_SENDER_NAME} <{MAIL_USERNAME}>"
     msg["To"] = penerima
     msg["Subject"] = subjek
 
     msg.attach(MIMEText(isi_html, "html", "utf-8"))
+
+    if qr_bytes:
+        qr_image = MIMEImage(qr_bytes, _subtype="png")
+        qr_image.add_header(
+            "Content-ID",
+            "<qr_tiket>"
+        )
+        qr_image.add_header(
+            "Content-Disposition",
+            "inline",
+            filename="qr-tiket.png"
+        )
+        msg.attach(qr_image)
 
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         server.starttls()
@@ -1107,16 +1121,154 @@ def hadirkan_manual():
 def verify_bukti(tiket_id):
 
     try:
-        tiket = Tiket.query.get_or_404(
-            tiket_id
-        )
+        tiket = Tiket.query.get_or_404(tiket_id)
 
         data = request.get_json()
+        verified_baru = data.get('verified', False)
 
-        tiket.bukti_terverifikasi = data.get(
-            'verified',
-            False
-        )
+        sebelumnya_terverifikasi = tiket.bukti_terverifikasi
+
+        tiket.bukti_terverifikasi = verified_baru
+
+        # Email hanya dikirim saat status berubah
+        # dari BELUM TERVERIFIKASI -> TERVERIFIKASI
+        if verified_baru and not sebelumnya_terverifikasi:
+
+            # Buat QR dari kode tiket yang sama
+            qr = qrcode.make(tiket.kode)
+
+            qr_buffer = io.BytesIO()
+            qr.save(qr_buffer, format='PNG')
+            qr_buffer.seek(0)
+
+            qr_bytes = qr_buffer.getvalue()
+
+            whatsapp_group_link = os.getenv(
+                "WHATSAPP_GROUP_LINK",
+                ""
+            )
+
+            isi_email = f"""
+            <html>
+                <body style="
+                    margin:0;
+                    padding:30px;
+                    background:#f8f5f3;
+                    font-family:Arial, sans-serif;
+                    color:#333;
+                ">
+
+                    <div style="
+                        max-width:600px;
+                        margin:auto;
+                        background:#ffffff;
+                        padding:30px;
+                        border-radius:16px;
+                    ">
+
+                        <h2 style="text-align:center;">
+                            Pembayaran Berhasil Diverifikasi 🎉
+                        </h2>
+
+                        <p>
+                            Halo <b>{tiket.nama}</b>,
+                        </p>
+
+                        <p>
+                            Pembayaran kamu untuk
+                            <b>Seminar Offline</b>
+                            telah berhasil diverifikasi oleh panitia.
+                        </p>
+
+                        <hr>
+
+                        <p>
+                            <b>Kode Tiket:</b><br>
+                            {tiket.kode}
+                        </p>
+
+                        <p>
+                            <b>Jenis Tiket:</b><br>
+                            {tiket.jenis_tiket or '-'}
+                        </p>
+
+                        <div style="
+                            text-align:center;
+                            margin:30px 0;
+                        ">
+
+                            <p>
+                                <b>QR Code Tiket Kamu</b>
+                            </p>
+
+                            <img
+                                src="cid:qr_tiket"
+                                alt="QR Code Tiket"
+                                style="
+                                    width:220px;
+                                    height:220px;
+                                "
+                            >
+
+                            <p style="
+                                font-size:13px;
+                                color:#777;
+                            ">
+                                Simpan QR Code ini dan
+                                tunjukkan saat registrasi acara.
+                            </p>
+
+                        </div>
+
+                        <hr>
+
+                        <div style="text-align:center;">
+
+                            <p>
+                                <b>Gabung ke Grup WhatsApp Peserta</b>
+                            </p>
+
+                            <a
+                                href="{whatsapp_group_link}"
+                                style="
+                                    display:inline-block;
+                                    padding:12px 22px;
+                                    background:#25D366;
+                                    color:white;
+                                    text-decoration:none;
+                                    border-radius:8px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Gabung Grup WhatsApp
+                            </a>
+
+                        </div>
+
+                        <p style="
+                            margin-top:30px;
+                            text-align:center;
+                        ">
+                            Sampai bertemu di acara! 🤍
+                        </p>
+
+                        <p>
+                            Salam,<br>
+                            <b>Panitia Seminar Offline</b>
+                        </p>
+
+                    </div>
+
+                </body>
+            </html>
+            """
+
+            kirim_email(
+                tiket.email,
+                "Pembayaran Terverifikasi - Seminar Offline",
+                isi_email,
+                qr_bytes
+            )
 
         db.session.commit()
 
