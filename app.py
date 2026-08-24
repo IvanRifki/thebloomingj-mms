@@ -1153,20 +1153,27 @@ def hadirkan_manual():
 @app.route('/verify_bukti/<int:tiket_id>', methods=['POST'])
 @login_required
 def verify_bukti(tiket_id):
-
     try:
         tiket = Tiket.query.get_or_404(tiket_id)
 
-        data = request.get_json()
+        data = request.get_json() or {}
         verified_baru = data.get('verified', False)
 
         sebelumnya_terverifikasi = tiket.bukti_terverifikasi
 
+        print("=== VERIFY BUKTI ===")
+        print("Tiket ID:", tiket.id)
+        print("Kode:", tiket.kode)
+        print("Email penerima:", tiket.email)
+        print("Sebelumnya:", sebelumnya_terverifikasi)
+        print("Sekarang:", verified_baru)
+
         tiket.bukti_terverifikasi = verified_baru
 
         if verified_baru and not sebelumnya_terverifikasi:
+            print("STATUS BERUBAH MENJADI TERVERIFIKASI")
+            print("Mencoba mengirim email ke:", tiket.email)
 
-            # Buat QR dari kode tiket yang sama
             qr = qrcode.make(tiket.kode)
 
             qr_buffer = io.BytesIO()
@@ -1189,7 +1196,6 @@ def verify_bukti(tiket_id):
                     font-family:Arial, sans-serif;
                     color:#333;
                 ">
-
                     <div style="
                         max-width:600px;
                         margin:auto;
@@ -1228,7 +1234,6 @@ def verify_bukti(tiket_id):
                             text-align:center;
                             margin:30px 0;
                         ">
-
                             <p>
                                 <b>QR Code Tiket Kamu</b>
                             </p>
@@ -1249,13 +1254,11 @@ def verify_bukti(tiket_id):
                                 Simpan QR Code ini dan
                                 tunjukkan saat registrasi acara.
                             </p>
-
                         </div>
 
                         <hr>
 
                         <div style="text-align:center;">
-
                             <p>
                                 <b>Gabung ke Grup WhatsApp Peserta</b>
                             </p>
@@ -1274,7 +1277,6 @@ def verify_bukti(tiket_id):
                             >
                                 Gabung Grup WhatsApp
                             </a>
-
                         </div>
 
                         <p style="
@@ -1290,10 +1292,11 @@ def verify_bukti(tiket_id):
                         </p>
 
                     </div>
-
                 </body>
             </html>
             """
+
+            print("Memanggil kirim_email()...")
 
             kirim_email(
                 tiket.email,
@@ -1302,15 +1305,23 @@ def verify_bukti(tiket_id):
                 qr_bytes
             )
 
+            print("EMAIL BERHASIL DIKIRIM!")
+
         db.session.commit()
+
+        print("DATABASE BERHASIL DI-COMMIT")
+        print("========================")
 
         return jsonify({
             "success": True
         })
 
     except Exception as e:
-
         db.session.rollback()
+
+        print("=== ERROR VERIFY BUKTI ===")
+        print(repr(e))
+        print("==========================")
 
         return jsonify({
             "success": False,
