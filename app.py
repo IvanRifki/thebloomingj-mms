@@ -144,7 +144,7 @@ def normalisasi_kode_referal(kode_referal_input):
     return kode_referal_input or None
 
 
-def kirim_email(penerima, subjek, isi_html, qr_bytes=None):
+def kirim_email(penerima, subjek, isi_html, qr_bytes=None, qr_list=None):
     creds = Credentials(
         token=None,
         refresh_token=GMAIL_REFRESH_TOKEN,
@@ -174,7 +174,27 @@ def kirim_email(penerima, subjek, isi_html, qr_bytes=None):
         )
     )
 
-    if qr_bytes:
+    if qr_list:
+        for index, qr_data in enumerate(qr_list, start=1):
+            qr_image = MIMEImage(
+                qr_data,
+                _subtype="png"
+            )
+
+            qr_image.add_header(
+                "Content-ID",
+                f"<qr_tiket_{index}>"
+            )
+
+            qr_image.add_header(
+                "Content-Disposition",
+                "inline",
+                filename=f"qr-tiket-{index}.png"
+            )
+
+            msg.attach(qr_image)
+
+    elif qr_bytes:
         qr_image = MIMEImage(
             qr_bytes,
             _subtype="png"
@@ -392,6 +412,34 @@ class Tiket(db.Model):
     bukti_terverifikasi = db.Column(
         db.Boolean,
         default=False
+    )
+
+
+class PesertaTiket(db.Model):
+    __tablename__ = 'peserta_tiket'
+
+    id = db.Column(db.Integer, primary_key=True)
+    tiket_id = db.Column(
+        db.Integer,
+        db.ForeignKey('tiket.id'),
+        nullable=False
+    )
+    kode_qr = db.Column(
+        db.String(20),
+        unique=True,
+        nullable=False
+    )
+    nomor = db.Column(
+        db.Integer,
+        nullable=False
+    )
+    is_used = db.Column(
+        db.Boolean,
+        default=False
+    )
+    waktu_scan = db.Column(
+        db.DateTime,
+        nullable=True
     )
 
 
@@ -697,7 +745,17 @@ def pendaftaran():
         db.session.add(tiket_baru)
         db.session.commit()
 
-        qr_base64 = generate_qr_base64(kode)
+        for nomor in range(1, peserta_baru + 1):
+            db.session.add(PesertaTiket(
+                tiket_id=tiket_baru.id,
+                kode_qr=f"{kode}-{nomor}",
+                nomor=nomor
+            ))
+        db.session.commit()
+
+        qr_base64 = generate_qr_base64(
+            f"{kode}-1"
+        )
 
         return render_template(
             'sukses.html',
@@ -869,6 +927,13 @@ def pendaftaran_normal():
         db.session.add(tiket_baru)
         db.session.commit()
 
+        db.session.add(PesertaTiket(
+            tiket_id=tiket_baru.id,
+            kode_qr=f"{kode}-1",
+            nomor=1
+        ))
+        db.session.commit()
+
         return redirect(
             url_for(
                 'sukses',
@@ -933,7 +998,14 @@ def sukses():
         )
         return redirect('/normal_daftar')
 
-    qr_base64 = generate_qr_base64(kode)
+    peserta_pertama = PesertaTiket.query.filter_by(
+        tiket_id=tiket.id,
+        nomor=1
+    ).first()
+
+    qr_base64 = generate_qr_base64(
+        peserta_pertama.kode_qr if peserta_pertama else kode
+    )
 
     return render_template(
         'sukses.html',
@@ -973,6 +1045,10 @@ def hapus_tiket(tiket_id):
 
         return redirect('/admin')
 
+    PesertaTiket.query.filter_by(
+        tiket_id=tiket.id
+    ).delete()
+
     db.session.delete(tiket)
     db.session.commit()
 
@@ -1008,6 +1084,11 @@ def reset_semua():
 
     Tiket.query.update({
         Tiket.is_used: False
+    })
+
+    PesertaTiket.query.update({
+        PesertaTiket.is_used: False,
+        PesertaTiket.waktu_scan: None
     })
 
     db.session.commit()
@@ -1169,8 +1250,16 @@ def hadirkan_manual():
             'message': 'Tiket tidak ditemukan.'
         }), 404
 
+    waktu_hadir = wib_now()
     tiket.is_used = True
-    tiket.waktu_scan = wib_now()
+    tiket.waktu_scan = waktu_hadir
+
+    PesertaTiket.query.filter_by(
+        tiket_id=tiket.id
+    ).update({
+        PesertaTiket.is_used: True,
+        PesertaTiket.waktu_scan: waktu_hadir
+    })
 
     db.session.commit()
 
@@ -1204,13 +1293,42 @@ def verify_bukti(tiket_id):
             print("STATUS BERUBAH MENJADI TERVERIFIKASI")
             print("Mencoba mengirim email ke:", tiket.email)
 
-            qr = qrcode.make(tiket.kode)
+            peserta_tiket = PesertaTiket.query.filter_by(
+                tiket_id=tiket.id
+            ).order_by(PesertaTiket.nomor.asc()).all()
 
-            qr_buffer = io.BytesIO()
-            qr.save(qr_buffer, format='PNG')
-            qr_buffer.seek(0)
+            if not peserta_tiket:
+                for nomor in range(1, (tiket.jumlah_peserta or 1) + 1):
+                    peserta_tiket.append(PesertaTiket(
+                        tiket_id=tiket.id,
+                        kode_qr=f"{tiket.kode}-{nomor}",
+                        nomor=nomor
+                    ))
+                db.session.flush()
 
-            qr_bytes = qr_buffer.getvalue()
+            qr_list = []
+            qr_html = ""
+
+            for peserta in peserta_tiket:
+                qr = qrcode.make(peserta.kode_qr)
+                qr_buffer = io.BytesIO()
+                qr.save(qr_buffer, format='PNG')
+                qr_buffer.seek(0)
+                qr_list.append(qr_buffer.getvalue())
+
+                qr_html += f"""
+                            <div style="text-align:center; margin:30px 0;">
+                                <p><b>QR Code Peserta {peserta.nomor}</b></p>
+                                <img
+                                    src="cid:qr_tiket_{peserta.nomor}"
+                                    alt="QR Code Peserta {peserta.nomor}"
+                                    style="width:220px; height:220px;"
+                                >
+                                <p style="font-size:13px; color:#777;">
+                                    Kode QR: <b>{peserta.kode_qr}</b>
+                                </p>
+                            </div>
+                """
 
             whatsapp_group_link = os.getenv(
                 "WHATSAPP_GROUP_LINK",
@@ -1260,31 +1378,16 @@ def verify_bukti(tiket_id):
                             {tiket.jenis_tiket or '-'}
                         </p>
 
-                        <div style="
+                        {qr_html}
+
+                        <p style="
                             text-align:center;
-                            margin:30px 0;
+                            font-size:13px;
+                            color:#777;
                         ">
-                            <p>
-                                <b>QR Code Tiket Kamu</b>
-                            </p>
-
-                            <img
-                                src="cid:qr_tiket"
-                                alt="QR Code Tiket"
-                                style="
-                                    width:220px;
-                                    height:220px;
-                                "
-                            >
-
-                            <p style="
-                                font-size:13px;
-                                color:#777;
-                            ">
-                                Simpan QR Code ini dan
-                                tunjukkan saat registrasi acara.
-                            </p>
-                        </div>
+                            Simpan semua QR Code ini dan tunjukkan
+                            masing-masing saat registrasi acara.
+                        </p>
 
                         <hr>
 
@@ -1332,7 +1435,7 @@ def verify_bukti(tiket_id):
                 tiket.email,
                 "Pembayaran Terverifikasi - The Blooming Journey 2026",
                 isi_email,
-                qr_bytes
+                qr_list=qr_list
             )
 
             print("EMAIL BERHASIL DIKIRIM!")
@@ -1550,30 +1653,39 @@ def scan():
 @app.route('/scan/<kode_tiket>')
 def scan_kode(kode_tiket):
 
-    tiket = Tiket.query.filter_by(
-        kode=kode_tiket
+    peserta = PesertaTiket.query.filter_by(
+        kode_qr=kode_tiket
     ).first()
 
-    if not tiket:
-
+    if not peserta:
         return render_template(
             'scan.html',
             status='tidak ditemukan',
             kode=kode_tiket
         )
 
-    if tiket.is_used:
+    tiket = Tiket.query.get(peserta.tiket_id)
 
+    if peserta.is_used:
         return render_template(
             'scan.html',
             status='telah terpakai',
             kode=kode_tiket,
-            nama_peserta=tiket.nama,
-            angkatan_peserta=tiket.jenis_tiket
+            nama_peserta=tiket.nama if tiket else '-',
+            angkatan_peserta=tiket.jenis_tiket if tiket else '-'
         )
 
-    tiket.is_used = True
-    tiket.waktu_scan = wib_now()
+    peserta.is_used = True
+    peserta.waktu_scan = wib_now()
+
+    if tiket:
+        semua_peserta = PesertaTiket.query.filter_by(
+            tiket_id=tiket.id
+        ).all()
+
+        if semua_peserta and all(p.is_used for p in semua_peserta):
+            tiket.is_used = True
+            tiket.waktu_scan = peserta.waktu_scan
 
     db.session.commit()
 
@@ -1581,8 +1693,8 @@ def scan_kode(kode_tiket):
         'scan.html',
         status='berhasil',
         kode=kode_tiket,
-        nama_peserta=tiket.nama,
-        angkatan_peserta=tiket.jenis_tiket
+        nama_peserta=tiket.nama if tiket else '-',
+        angkatan_peserta=tiket.jenis_tiket if tiket else '-'
     )
 
 
