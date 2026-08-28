@@ -1,3 +1,5 @@
+<!--daftar.html-->
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -55,6 +57,11 @@
                 <div class="form-group">
                     <label for="email">Email<span style="color: red;">*</span></label>
                     <input type="email" id="email" name="email" placeholder="mms@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="ref">Kode Referal</label>
+                    <input type="text" id="ref" name="ref" placeholder="Isi jika memiliki kode referal">
+                    <span class="file-hint" id="refFeedback"></span>
                 </div>
 
                 <!-- tiket info-->
@@ -218,9 +225,74 @@
         const displayTotal = document.getElementById('displayTotalHarga');
         const displayHargaLama = document.getElementById('displayHargaLama');
         const paketCards = document.querySelectorAll('.paket-card');
+        const refInput = document.getElementById('ref');
+        const refFeedback = document.getElementById('refFeedback');
 
         function formatRupiah(angka) {
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // --- REFERAL (potongan Rp1.000/orang, dikali jumlah orang di paket) ---
+        const DISKON_REFERAL_PER_ORANG = 1000;
+
+        const KODE_REFERAL_VALID = [
+            "TBJ-LWF",
+            "TBJ-PPI",
+            "TBJ-MWFH",
+            "TBJ-AGC",
+            "TBJKRIS01",
+            "TBJSITI02",
+            "TBJAISY03",
+            "TBJHAFS04",
+            "TBJSABR05",
+            "TBJULIN06",
+            "TBJRIKA07",
+            "TBJAYU08",
+            "TBJCIND09",
+            "TBJDELI10",
+            "TBJLINA11",
+            "TBJNAND12",
+            "TBJYULI13",
+            "TBJLAYL14",
+            "TBJNURU15",
+            "TBJERIS16"
+        ];
+
+        function isRefValid() {
+            const kode = refInput ? refInput.value.trim().toUpperCase() : '';
+            return kode !== '' && KODE_REFERAL_VALID.includes(kode);
+        }
+
+        function updateHargaDisplay() {
+            const checkedRadio = document.querySelector('input[name="paket_tiket"]:checked');
+            if (!checkedRadio) return;
+
+            const hargaBaru = parseInt(checkedRadio.getAttribute('data-harga'));
+            const hargaLama = parseInt(checkedRadio.getAttribute('data-harga-lama'));
+            const jumlah = parseInt(checkedRadio.closest('.paket-card').dataset.jumlah, 10) || 1;
+
+            const refValid = isRefValid();
+            const totalAkhir = refValid
+                ? (hargaBaru - (DISKON_REFERAL_PER_ORANG * jumlah))
+                : hargaBaru;
+
+            displayTotal.innerText = formatRupiah(totalAkhir);
+
+            if (displayHargaLama) {
+                displayHargaLama.innerText = formatRupiah(hargaLama);
+            }
+
+            if (refFeedback) {
+                if (!refInput || refInput.value.trim() === '') {
+                    refFeedback.innerText = '';
+                } else if (refValid) {
+                    refFeedback.innerText = 'Kode referal valid ✓';
+                    refFeedback.style.color = 'green';
+                } else {
+                    refFeedback.innerText = 'Kode referal tidak ditemukan';
+                    refFeedback.style.color = 'red';
+                }
+            }
         }
 
         radioPaket.forEach(radio => {
@@ -229,21 +301,17 @@
                 paketCards.forEach(card => card.classList.remove('active'));
                 e.target.closest('.paket-card').classList.add('active');
 
-
-                const hargaBaru = parseInt(e.target.getAttribute('data-harga'));
-                const hargaLama = parseInt(e.target.getAttribute('data-harga-lama'));
-
-                displayTotal.innerText = formatRupiah(hargaBaru);
-
-                if (displayHargaLama) {
-                    displayHargaLama.innerText = formatRupiah(hargaLama);
-                }
+                updateHargaDisplay();
             });
         });
 
+        if (refInput) {
+            refInput.addEventListener('input', updateHargaDisplay);
+        }
+
         // --- autosave buat org org---
         const form = document.getElementById('registerForm');
-        const fields = ['nama', 'telp', 'email'];
+        const fields = ['nama', 'telp', 'email', 'ref'];
 
         fields.forEach(id => {
             const input = document.getElementById(id);
@@ -256,6 +324,9 @@
                 localStorage.setItem('form_' + id, input.value);
             });
         });
+
+        // hitung ulang harga setelah nilai autosave (termasuk kode referal) di-restore
+        updateHargaDisplay();
 
         if (form) {
             form.addEventListener('submit', () => {

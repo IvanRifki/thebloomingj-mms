@@ -538,6 +538,7 @@
                         <th>Verifikasi</th>
                         <th>No Telp</th>
                         <th>Email</th>
+                        <th>Kode Referal</th>
                         <th>Jenis Tiket</th>
                         <th>Status</th>
                         <th>Waktu Scan</th>
@@ -601,6 +602,16 @@
                             {{ t.email }}
                         </td>
 
+                        <!-- KODE REFERAL -->
+                        <td>
+                            {% if t.kode_referal %}
+                            <span class="mms-badge mms-badge-info">
+                                {{ t.kode_referal }}
+                            </span>
+                            {% else %}
+                            <span style="color: var(--text-muted);">-</span>
+                            {% endif %}
+                        </td>
 
                         <!-- JENIS TIKET -->
                         <td>

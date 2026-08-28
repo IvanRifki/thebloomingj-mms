@@ -104,6 +104,45 @@ supabase = create_client(
 
 WIB = ZoneInfo('Asia/Jakarta')
 
+# Kode referal yang berlaku untuk seluruh pendaftaran (Early Bird & Normal).
+# Dipakai bareng oleh route /daftar dan /normal_daftar.
+KODE_REFERAL_VALID = [
+    'TBJ-LWF',
+    'TBJ-PPI',
+    'TBJ-MWFH',
+    'TBJ-AGC',
+    'TBJKRIS01',
+    'TBJSITI02',
+    'TBJAISY03',
+    'TBJHAFS04',
+    'TBJSABR05',
+    'TBJULIN06',
+    'TBJRIKA07',
+    'TBJAYU08',
+    'TBJCIND09',
+    'TBJDELI10',
+    'TBJLINA11',
+    'TBJNAND12',
+    'TBJYULI13',
+    'TBJLAYL14',
+    'TBJNURU15',
+    'TBJERIS16',
+]
+
+
+def normalisasi_kode_referal(kode_referal_input):
+    """
+    Cek kode referal (case-insensitive) terhadap KODE_REFERAL_VALID.
+    Return kode ter-normalisasi (upper) kalau valid, else nilai asli (atau None kalau kosong).
+    """
+
+    kode_ref_upper = (kode_referal_input or '').strip().upper()
+
+    if kode_ref_upper in KODE_REFERAL_VALID:
+        return kode_ref_upper
+
+    return kode_referal_input or None
+
 
 def kirim_email(penerima, subjek, isi_html, qr_bytes=None):
     creds = Credentials(
@@ -525,8 +564,12 @@ def pendaftaran():
             request.form.get('email')
         )
 
-        kode_referal = sanitize_input(
+        kode_referal_input = sanitize_input(
             request.form.get('ref')
+        )
+
+        kode_referal = normalisasi_kode_referal(
+            kode_referal_input
         )
 
         if not nama:
@@ -684,29 +727,6 @@ def pendaftaran():
 @app.route('/normal_daftar', methods=['GET', 'POST'])
 def pendaftaran_normal():
 
-    KODE_REFERAL_VALID = [
-        'TBJ-LWF',
-        'TBJ-PPI',
-        'TBJ-MWFH',
-        'TBJ-AGC',
-        'TBJKRIS01',
-        'TBJSITI02',
-        'TBJAISY03',
-        'TBJHAFS04',
-        'TBJSABR05',
-        'TBJULIN06',
-        'TBJRIKA07',
-        'TBJAYU08',
-        'TBJCIND09',
-        'TBJDELI10',
-        'TBJLINA11',
-        'TBJNAND12',
-        'TBJYULI13',
-        'TBJLAYL14',
-        'TBJNURU15',
-        'TBJERIS16',
-    ]
-
     kuota = get_kuota()
 
     total_terdaftar = db.session.query(
@@ -778,18 +798,9 @@ def pendaftaran_normal():
         if total_normal + peserta_baru > limit_normal:
             return redirect('/habis')
 
-        kode_ref_upper = (
-            kode_referal or ''
-        ).strip().upper()
-
-        if kode_ref_upper in KODE_REFERAL_VALID:
-            harga_final = 398000
-            kode_referal_final = kode_ref_upper
-        else:
-            harga_final = 399000
-            kode_referal_final = (
-                kode_referal or None
-            )
+        kode_referal_final = normalisasi_kode_referal(
+            kode_referal
+        )
 
         try:
             file_bukti = request.files.get('bukti')
