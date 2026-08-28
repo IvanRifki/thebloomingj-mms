@@ -109,6 +109,8 @@
 
                     <div class="total-harga-wrapper">
                         <del class="total-harga-coret" id="displayHargaLama">Rp 399.000</del>
+                        <span class="diskon-referal-badge" id="displayDiskonReferal" style="display:none;">-Rp
+                            1.000</span>
                         <span class="total-harga-value" id="displayTotalHarga">Rp 329.000</span>
                     </div>
                 </div>
@@ -280,6 +282,17 @@
 
             if (displayHargaLama) {
                 displayHargaLama.innerText = formatRupiah(hargaLama);
+            }
+
+            const displayDiskonReferal = document.getElementById('displayDiskonReferal');
+            if (displayDiskonReferal) {
+                if (refValid) {
+                    const diskonReferal = DISKON_REFERAL_PER_ORANG * jumlah;
+                    displayDiskonReferal.innerText = '-' + formatRupiah(diskonReferal);
+                    displayDiskonReferal.style.display = 'inline';
+                } else {
+                    displayDiskonReferal.style.display = 'none';
+                }
             }
 
             if (refFeedback) {
