@@ -127,6 +127,7 @@ KODE_REFERAL_VALID = [
     'TBJLAYL14',
     'TBJNURU15',
     'TBJERIS16',
+    'TBJICA17',
 ]
 
 
