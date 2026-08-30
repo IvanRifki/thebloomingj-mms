@@ -543,7 +543,7 @@ def api_sisa_eb():
     tiket_eb = Tiket.query.filter(
         Tiket.jenis_tiket.in_([
             'single_eb',
-            'circle_eb',
+            'bestie_eb',
             'squad_eb'
         ])
     ).all()
@@ -579,7 +579,7 @@ def pendaftaran():
     tiket_eb = Tiket.query.filter(
         Tiket.jenis_tiket.in_([
             'single_eb',
-            'circle_eb',
+            'bestie_eb',
             'squad_eb'
         ])
     ).all()
@@ -633,7 +633,7 @@ def pendaftaran():
 
         map_peserta = {
             'single_eb': 1,
-            'circle_eb': 3,
+            'bestie_eb': 3,
             'squad_eb': 5
         }
 
@@ -647,14 +647,14 @@ def pendaftaran():
 
         if jenis_tiket in [
             'single_eb',
-            'circle_eb',
+            'bestie_eb',
             'squad_eb'
         ]:
 
             tiket_eb = Tiket.query.filter(
                 Tiket.jenis_tiket.in_([
                     'single_eb',
-                    'circle_eb',
+                    'bestie_eb',
                     'squad_eb'
                 ])
             ).all()
