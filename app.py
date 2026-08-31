@@ -1463,6 +1463,52 @@ def verify_bukti(tiket_id):
         }), 500
 
 
+@app.route('/reset_tiket/<int:tiket_id>', methods=['POST'])
+def reset_tiket(tiket_id):
+
+    tiket = Tiket.query.get(tiket_id)
+
+    if not tiket:
+        flash('Data tidak ditemukan', 'danger')
+        return redirect('/admin')
+
+    tiket.is_used = False
+    tiket.waktu_scan = None
+
+    PesertaTiket.query.filter_by(
+        tiket_id=tiket.id
+    ).update({
+        PesertaTiket.is_used: False,
+        PesertaTiket.waktu_scan: None
+    })
+
+    db.session.commit()
+
+    flash('Status kehadiran berhasil direset.', 'success')
+
+    return redirect('/admin')
+
+
+@app.route('/api/stats')
+def api_stats():
+
+    tiket = Tiket.query.all()
+
+    total = sum(t.jumlah_peserta or 1 for t in tiket)
+    hadir = sum((t.jumlah_peserta or 1) for t in tiket if t.is_used)
+    belum_hadir = total - hadir
+    kuota = get_kuota()
+
+    resp = jsonify({
+        'total': total,
+        'hadir': hadir,
+        'belum_hadir': belum_hadir,
+        'sisa_kuota': max(0, kuota - total)
+    })
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp
+
+
 @app.route('/admin/kuota', methods=['POST'])
 def admin_kuota():
 
