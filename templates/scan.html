@@ -24,6 +24,20 @@
         <div id="reader"></div>
     </div>
 
+    <div class="mms-card" style="padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid #D9BBB4;">
+        <p style="font-size: 0.85rem; color: #594F40; margin-bottom: 0.75rem; text-align: center;">
+            Kamera nggak jalan? Masukkan kode tiket manual:
+        </p>
+        <form id="manualScanForm" style="display: flex; gap: 0.5rem;">
+            <input type="text" id="manualKode" placeholder="Contoh: MMS-AB12-1" required
+                style="flex: 1; padding: 0.6rem 0.75rem; border: 1px solid #D9BBB4; border-radius: 8px; font-size: 0.95rem;">
+            <button type="submit" class="mms-btn"
+                style="background: linear-gradient(135deg, #A6727C, #732D3A); color: white; white-space: nowrap;">
+                <i class="fas fa-check"></i> Cek
+            </button>
+        </form>
+    </div>
+
     {% if status %}
     <div class="scan-result {% if status == 'berhasil' %}success{% elif status == 'telah terpakai' %}warning{% else %}error{% endif %}"
         style="margin-bottom: 1.5rem;">
@@ -78,5 +92,13 @@
     }
     );
     html5QrcodeScanner.render(onScanSuccess);
+
+    document.getElementById('manualScanForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const kodeInput = document.getElementById('manualKode').value.trim();
+        if (kodeInput) {
+            onScanSuccess(kodeInput);
+        }
+    });
 </script>
 {% endblock %}
