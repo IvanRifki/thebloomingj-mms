@@ -626,11 +626,21 @@
                         <!-- STATUS -->
                         <td class="status-cell">
 
+                            {% set hadir_count = peserta_hadir_map.get(t.id, 0) %}
+                            {% set total_peserta = t.jumlah_peserta or 1 %}
+
                             {% if t.is_used %}
 
                             <span class="mms-badge mms-badge-success">
                                 <i class="fas fa-check-circle"></i>
                                 Hadir
+                            </span>
+
+                            {% elif hadir_count > 0 %}
+
+                            <span class="mms-badge mms-badge-info">
+                                <i class="fas fa-user-clock"></i>
+                                {{ hadir_count }}/{{ total_peserta }} Hadir
                             </span>
 
                             {% else %}
@@ -643,7 +653,6 @@
                             {% endif %}
 
                         </td>
-
 
                         <!-- WAKTU SCAN -->
                         <td class="scan-time" style="

@@ -1643,18 +1643,24 @@ def admin():
     try:
         tiket = Tiket.query.all()
 
-        # total peserta terdaftar (bukan jumlah baris tiket)
         total = sum(t.jumlah_peserta or 1 for t in tiket)
-
-        # peserta yang sudah hadir (dihitung per peserta, konsisten dgn total)
         terpakai = sum(
             (t.jumlah_peserta or 1) for t in tiket if t.is_used
         )
-
         sisa = total - terpakai
 
         kuota = get_kuota()
         limit_early_bird = get_limit_early_bird()
+
+        # hitung berapa peserta yg udah discan per tiket (buat status partial)
+        peserta_hadir_rows = db.session.query(
+            PesertaTiket.tiket_id,
+            db.func.sum(db.case((PesertaTiket.is_used == True, 1), else_=0))
+        ).group_by(PesertaTiket.tiket_id).all()
+
+        peserta_hadir_map = {
+            tiket_id: hadir_count for tiket_id, hadir_count in peserta_hadir_rows
+        }
 
         return render_template(
             'admin.html',
@@ -1663,7 +1669,8 @@ def admin():
             terpakai=terpakai,
             sisa=sisa,
             kuota=kuota,
-            limit_early_bird=limit_early_bird
+            limit_early_bird=limit_early_bird,
+            peserta_hadir_map=peserta_hadir_map
         )
 
     except Exception:
