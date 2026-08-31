@@ -1495,7 +1495,7 @@ def api_stats():
     tiket = Tiket.query.all()
 
     total = sum(t.jumlah_peserta or 1 for t in tiket)
-    hadir = sum((t.jumlah_peserta or 1) for t in tiket if t.is_used)
+    hadir = PesertaTiket.query.filter_by(is_used=True).count()
     belum_hadir = total - hadir
     kuota = get_kuota()
 
@@ -1644,15 +1644,15 @@ def admin():
         tiket = Tiket.query.all()
 
         total = sum(t.jumlah_peserta or 1 for t in tiket)
-        terpakai = sum(
-            (t.jumlah_peserta or 1) for t in tiket if t.is_used
-        )
+
+        # hitung PER PESERTA yang udah scan (bukan per tiket)
+        terpakai = PesertaTiket.query.filter_by(is_used=True).count()
+
         sisa = total - terpakai
 
         kuota = get_kuota()
         limit_early_bird = get_limit_early_bird()
 
-        # hitung berapa peserta yg udah discan per tiket (buat status partial)
         peserta_hadir_rows = db.session.query(
             PesertaTiket.tiket_id,
             db.func.sum(db.case((PesertaTiket.is_used == True, 1), else_=0))
