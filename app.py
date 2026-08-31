@@ -957,7 +957,7 @@ def pendaftaran_normal():
 def test_email():
     try:
         kirim_email(
-            "madrasahwanita21@gmail.com",
+            "nazuairo@gmail.com",
             "Tes Email - Seminar Offline",
             """
             <html>
