@@ -1597,11 +1597,12 @@ def admin():
     try:
         tiket = Tiket.query.all()
 
-        total = len(tiket)
+        # total peserta terdaftar (bukan jumlah baris tiket)
+        total = sum(t.jumlah_peserta or 1 for t in tiket)
 
+        # peserta yang sudah hadir (dihitung per peserta, konsisten dgn total)
         terpakai = sum(
-            1 for t in tiket
-            if t.is_used
+            (t.jumlah_peserta or 1) for t in tiket if t.is_used
         )
 
         sisa = total - terpakai
